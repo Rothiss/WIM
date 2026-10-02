@@ -1,6 +1,10 @@
 if GetLocale() ~= "enGB" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.13 (02/10/2026)|cffffffff
+[*] - Fixed Shift getting stuck and breaking action bars/shortcuts while a chat window is open
+[*] - Shift+click linking now only works while actually typing in a conversation window
+
 |rVersion 1.3.12 (19/02/2026)|cffffffff
 [*] - Attempted to fix keybindings not working while a WIM window is open
 

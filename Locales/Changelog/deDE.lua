@@ -1,6 +1,10 @@
 if GetLocale() ~= "deDE" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.13 (02.10.2026)|cffffffff
+[*] - Shift bleibt nicht mehr hängen und blockiert nicht länger Aktionsleisten/Tastenkürzel, solange ein Chatfenster geöffnet ist
+[*] - Shift+Klick-Verlinken funktioniert jetzt nur noch, während du wirklich in einem Chatfenster tippst
+
 |rVersion 1.3.12 (19.02.2026)|cffffffff
 [*] - Versuch, das Problem mit Tastenbelegungen bei geöffnetem WIM-Fenster zu beheben
 

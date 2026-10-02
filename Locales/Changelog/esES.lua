@@ -1,6 +1,10 @@
 if GetLocale() ~= "esES" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersión 1.3.13 (02/10/2026)|cffffffff
+[*] - Se corrigió que Shift se quedara atascado y bloqueaba las barras de acción/accesos rápidos con una ventana de chat abierta
+[*] - El enlazado con Shift+clic ahora solo funciona mientras escribes en una ventana de conversación
+
 |rVersión 1.3.12 (19/02/2026)|cffffffff
 [*] - Intento de corregir las teclas de acceso rápido que no funcionaban con una ventana WIM abierta
 

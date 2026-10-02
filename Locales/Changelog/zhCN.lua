@@ -1,6 +1,10 @@
 if GetLocale() ~= "zhCN" then return end
 
 WIM_CHANGE_LOG = [[
+|r版本 1.3.13 (2026年10月02日)|cffffffff
+[*] - 修复聊天窗口打开时Shift键卡住导致动作条/快捷键无法使用的问题
+[*] - Shift+点击链接现在只在对话窗口中实际输入时生效
+
 |r版本 1.3.12 (2026年02月19日)|cffffffff
 [*] - 尝试修复WIM窗口打开时快捷键无法使用的问题
 

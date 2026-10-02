@@ -335,8 +335,7 @@
 								getglobal(this:GetParent():GetName().."MsgBox"):SetFocus();
 							else
 								if(WIM_EditBoxInFocus:GetName() == this:GetParent():GetName().."MsgBox") then
-									getglobal(this:GetParent():GetName().."MsgBox"):Hide();
-									getglobal(this:GetParent():GetName().."MsgBox"):Show();
+									getglobal(this:GetParent():GetName().."MsgBox"):ClearFocus();
 								else
 									getglobal(this:GetParent():GetName().."MsgBox"):SetFocus();
 								end
@@ -380,18 +379,18 @@
 							this:AddHistoryLine(this:GetText());
 						end
 						this:SetText("");
-						if(not WIM_Data.keepFocus) then
-							this:Hide();
-							this:Show();
-						elseif(not IsResting() and WIM_Data.keepFocusRested) then
-							this:Hide();
-							this:Show();
+						-- Keep or drop focus per user preference. Never hide a focused
+						-- edit box mid-keypress (that can drop the Shift key-up and
+						-- leave the modifier stuck).
+						if(not WIM_Data.keepFocus) or (WIM_Data.keepFocusRested and not IsResting()) then
+							this:ClearFocus();
+						else
+							this:SetFocus();
 						end
 					</OnEnterPressed>
 					<OnEscapePressed>
 						this:SetText("");
-						this:Hide();
-						this:Show();
+						this:ClearFocus();
 					</OnEscapePressed>
 					<OnTabPressed>
 						--cycle through windows
@@ -404,11 +403,11 @@
 						end
 					</OnEditFocusGained>
 					<OnEditFocusLost>
-						-- Keep WIM_EditBoxInFocus while the WIM window is visible
-						-- so that shift+click linking works even after clicking other UI
-						if not this:GetParent():IsVisible() then
-							WIM_EditBoxInFocus = nil;
-						end
+						-- Only redirect shift+click links while this box actually has
+						-- keyboard focus. Never keep a stale target: a lingering
+						-- WIM_EditBoxInFocus makes the ChatFrameEditBox proxy lie about
+						-- chat visibility during Shift and hijacks Shift+clicks (action bars).
+						WIM_EditBoxInFocus = nil;
 					</OnEditFocusLost>
 				</Scripts>
 			</EditBox>
@@ -581,9 +580,6 @@
 				if(WIM_Data.autoFocus == true) then
 					msgBox:SetFocus();
 				end
-				if WIM_OrigChatEditBoxIsVisible and not WIM_OrigChatEditBoxIsVisible(ChatFrameEditBox) then
-					WIM_EditBoxInFocus = msgBox;
-				end
 				WIM_LoadShortcutFrame();
 				WIM_WindowOnShow();
 			</OnShow>
@@ -595,15 +591,6 @@
 				WIM_Windows[user].newMSG = false;
 				if WIM_EditBoxInFocus == getglobal(this:GetName().."MsgBox") then
 					WIM_EditBoxInFocus = nil;
-					for otherUser, data in WIM_Windows do
-						if data.is_visible then
-							local msgBox = getglobal(data.frame .. "MsgBox")
-							if msgBox then
-								WIM_EditBoxInFocus = msgBox
-								break
-							end
-						end
-					end
 				end
 			</OnHide>
 		</Scripts>

@@ -126,10 +126,15 @@ function WIM_SetUpHooks()
 
 	-- Proxy ChatFrameEditBox so all shift+click handlers (game + addons)
 	-- automatically redirect link insertions to WIM's edit box.
-	-- When WIM_EditBoxInFocus is set:
+	-- WIM_EditBoxInFocus is only set while a WIM edit box actually has keyboard
+	-- focus (see OnEditFocusGained/OnEditFocusLost in WIM.xml). When it is set
+	-- and Shift is held:
 	--   IsVisible/IsShown return true -> handlers call Insert instead of default action
 	--   Insert redirects to WIM_EditBoxInFocus
 	-- This eliminates the need to hook every individual shift+click handler.
+	-- Gating on real focus (not merely "a window is open") keeps the proxy from
+	-- making the game believe chat is active during Shift+clicks after the user
+	-- has left the edit box, which broke Shift+clicking on action bars.
 	do
 		local origIsVisible = ChatFrameEditBox.IsVisible
 		local origIsShown = ChatFrameEditBox.IsShown
@@ -241,23 +246,6 @@ function WIM_SetUpHooks()
 		WIM_EditBoxInFocus = nil
 		if origChatEditBoxOnShow then
 			origChatEditBoxOnShow()
-		end
-	end)
-
-	--Restore WIM_EditBoxInFocus when vanilla chat edit box closes
-	local origChatEditBoxOnHide = ChatFrameEditBox:GetScript('OnHide')
-	ChatFrameEditBox:SetScript('OnHide', function()
-		if origChatEditBoxOnHide then
-			origChatEditBoxOnHide()
-		end
-		for user, data in WIM_Windows do
-			if data.is_visible then
-				local msgBox = getglobal(data.frame .. "MsgBox")
-				if msgBox then
-					WIM_EditBoxInFocus = msgBox
-					return
-				end
-			end
 		end
 	end)
 

@@ -1,6 +1,10 @@
 if GetLocale() ~= "koKR" then return end
 
 WIM_CHANGE_LOG = [[
+|r버전 1.3.13 (2026년 10월 02일)|cffffffff
+[*] - 대화창이 열려 있을 때 Shift가 고정되어 행동 바/단축키가 작동하지 않던 문제 수정
+[*] - Shift+클릭 링크는 이제 실제로 대화창에 입력 중일 때만 작동합니다
+
 |r버전 1.3.12 (2026년 02월 19일)|cffffffff
 [*] - WIM 창이 열려 있을 때 단축키가 작동하지 않던 문제 수정 시도
 

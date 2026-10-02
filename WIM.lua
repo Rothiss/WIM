@@ -1,4 +1,4 @@
-WIM_VERSION = "1.3.12";
+WIM_VERSION = "1.3.13";
 
 WIM_Windows = {};
 WIM_EditBoxInFocus = nil;
@@ -646,7 +646,18 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 			f:Show()
 			if ttype ==5 then
 				f:Raise()
-				getglobal(f:GetName()..'MsgBox'):SetFocus()
+				-- Defer SetFocus by one frame so the key/binding that opened the
+				-- window (Enter, reply key) is fully released before the edit box
+				-- takes keyboard focus. Grabbing focus mid-keypress can make the
+				-- client swallow the modifier key-up and stick Shift.
+				local msgBox = getglobal(f:GetName()..'MsgBox')
+				msgBox:SetScript('OnUpdate', function()
+					msgBox:SetScript('OnUpdate', nil)
+					if hotkeyFix then
+						msgBox:SetText('')
+					end
+					msgBox:SetFocus()
+				end)
 			end
 		end
 	end
@@ -655,14 +666,6 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 	if WIM_HistoryFrame:IsVisible() then
 		WIM_HistoryViewNameScrollBar_Update()
 		WIM_HistoryViewFiltersScrollBar_Update()
-	end
-
-	if hotkeyFix then
-		local msgBox = getglobal(f:GetName()..'MsgBox')
-		msgBox:SetScript('OnUpdate', function()
-			this:SetText('')
-			this:SetScript('OnUpdate', nil)
-		end)
 	end
 end
 

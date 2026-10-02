@@ -1,6 +1,10 @@
 if GetLocale() ~= "ptBR" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersão 1.3.13 (02/10/2026)|cffffffff
+[*] - Corrigido o Shift que ficava travado e bloqueava as barras de ação/atalhos com uma janela de chat aberta
+[*] - Vincular com Shift+clique agora só funciona enquanto você digita em uma janela de conversa
+
 |rVersão 1.3.12 (19/02/2026)|cffffffff
 [*] - Tentativa de corrigir teclas de atalho que não funcionavam com uma janela WIM aberta
 
