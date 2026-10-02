@@ -920,28 +920,50 @@ local function WIM_TrimWhitespaceLines(text)
 	return text
 end
 
-local function WIM_Help_SetText(text)
+local WIM_HelpScrollOffset = 0
+local WIM_HelpMaxScroll = 0
+local WIM_HelpScrollStep = 20
+local WIM_HelpScrollHooked = false
+
+local function WIM_Help_SetScroll(offset)
+	offset = math.max(0, math.min(offset, WIM_HelpMaxScroll))
+	WIM_HelpScrollOffset = offset
+	WIM_HelpScrollFrame:SetVerticalScroll(offset)
+	local scrollBar = WIM_HelpScrollFrameScrollBar
+	scrollBar:SetMinMaxValues(0, math.max(WIM_HelpMaxScroll, 1))
+	scrollBar:SetValue(offset)
+end
+
+-- The default UIPanelScrollFrameTemplate range never materializes for this
+-- text-only scroll child (GetMinMaxValues stays nil), so manage the scroll
+-- offset ourselves and drive the ScrollFrame directly.
+local function WIM_Help_EnsureScrollHook()
+	if WIM_HelpScrollHooked then
+		return
+	end
+	WIM_HelpScrollHooked = true
+	WIM_HelpScrollFrame:SetScript("OnMouseWheel", function(_, delta)
+		WIM_Help_SetScroll(WIM_HelpScrollOffset - delta * WIM_HelpScrollStep)
+	end)
+end
+
+local function WIM_Help_RefreshScrollRange()
 	local textString = WIM_HelpScrollFrameScrollChildText
 	local scrollFrame = WIM_HelpScrollFrame
 	local scrollChild = WIM_HelpScrollFrameScrollChild
-	local scrollBar = WIM_HelpScrollFrameScrollBar
 
-	textString:SetText(text)
-	textString:SetWidth(scrollFrame:GetWidth())
 	scrollChild:SetWidth(scrollFrame:GetWidth())
 	scrollChild:SetHeight(textString:GetHeight() + 2)
+	WIM_HelpMaxScroll = math.max(0, scrollChild:GetHeight() - scrollFrame:GetHeight())
+	WIM_Help_SetScroll(0)
+end
 
-	scrollFrame:UpdateScrollChildRect()
-
-	-- Establish the scroll range explicitly (client-independent) so the
-	-- content height is honored even when UpdateScrollChildRect can't derive
-	-- a range from a FontString child, then reset the position to the top.
-	local maxScroll = math.max(0, scrollChild:GetHeight() - scrollFrame:GetHeight())
-	scrollBar:SetMinMaxValues(0, maxScroll)
-	scrollBar:SetValue(0)
-	if scrollFrame.SetVerticalScroll then
-		scrollFrame:SetVerticalScroll(0)
-	end
+local function WIM_Help_SetText(text)
+	local textString = WIM_HelpScrollFrameScrollChildText
+	textString:SetText(text)
+	textString:SetWidth(WIM_HelpScrollFrame:GetWidth())
+	WIM_Help_EnsureScrollHook()
+	WIM_Help_RefreshScrollRange()
 end
 
 function WIM_Help_Description_Click()
