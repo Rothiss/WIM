@@ -92,6 +92,62 @@ function WIM_HistoryViewFiltersScrollBar_Update()
 end
 
 
+function WIM_HistoryViewMessageListScrollBar_Update()
+	local smf = WIM_HistoryFrameMessageListScrollingMessageFrame;
+	local sb = WIM_HistoryFrameMessageListScrollBar;
+
+	local numMessages = 0;
+	if smf.GetNumMessages then
+		numMessages = smf:GetNumMessages() or 0;
+	end
+	local numLines = 1;
+	if smf.GetNumLinesDisplayed then
+		numLines = smf:GetNumLinesDisplayed() or 1;
+	end
+	if(numLines < 1) then
+		numLines = 1;
+	end
+
+	local maxScroll = math.max(0, numMessages - numLines);
+	FauxScrollFrame_Update(sb, numMessages, numLines, 1);
+
+	-- Current position: lines scrolled away from the bottom (0 = bottom/newest)
+	local current = 0;
+	if smf.GetScrollOffset then
+		current = smf:GetScrollOffset() or 0;
+	elseif smf:AtTop() then
+		current = maxScroll;
+	elseif smf.GetCurrentScroll then
+		current = smf:GetCurrentScroll() or 0;
+	end
+	current = math.max(0, math.min(current, maxScroll));
+
+	-- Faux offset 0 = top of the list; ScrollingMessageFrame offset 0 = bottom
+	sb:SetValue(maxScroll - current);
+
+	-- If this was a user drag, move the message frame to the target position.
+	local fauxOffset = FauxScrollFrame_GetOffset(sb);
+	local target = math.max(0, maxScroll - fauxOffset);
+	if(math.abs(target - current) > 1) then
+		local guard = 0;
+		while(current < target and guard < 5000) do
+			smf:ScrollUp();
+			if smf.GetScrollOffset then
+				current = smf:GetScrollOffset() or current;
+			end
+			guard = guard + 1;
+		end
+		while(current > target and guard < 5000) do
+			smf:ScrollDown();
+			if smf.GetScrollOffset then
+				current = smf:GetScrollOffset() or current;
+			end
+			guard = guard + 1;
+		end
+	end
+end
+
+
 function WIM_HistoryView_ShowMessages()
 	local tStamp = "";
 	local tFrom = "";
