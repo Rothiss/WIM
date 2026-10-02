@@ -914,13 +914,19 @@ function WIM_Options_CascadeDirectionClick()
 	UIDropDownMenu_SetSelectedValue(WIM_OptionsTabbedFrameWindowCascadeDirection, WIM_Data.winCascade.direction);
 end
 
+local function WIM_TrimWhitespaceLines(text)
+	text = text:gsub("^%s*\n", "")
+	text = text:gsub("\n%s*$", "")
+	return text
+end
+
 function WIM_Help_Description_Click()
 	PanelTemplates_SelectTab(WIM_HelpTab1);
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_DESCRIPTION);
+	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_DESCRIPTION));
 	WIM_HelpScrollFrameScrollBar:SetValue(0);
 	WIM_HelpScrollFrame:UpdateScrollChildRect();
 end
@@ -931,7 +937,7 @@ function WIM_Help_ChangeLog_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_CHANGE_LOG);
+	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_CHANGE_LOG));
 	WIM_HelpScrollFrameScrollBar:SetValue(0);
 	WIM_HelpScrollFrame:UpdateScrollChildRect();
 end
@@ -942,7 +948,7 @@ function WIM_Help_DidYouKnow_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_DIDYOUKNOW);
+	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_DIDYOUKNOW));
 	WIM_HelpScrollFrameScrollBar:SetValue(0);
 	WIM_HelpScrollFrame:UpdateScrollChildRect();
 end
@@ -953,7 +959,7 @@ function WIM_Help_Credits_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_CREDITS);
+	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
 	WIM_HelpScrollFrameScrollBar:SetValue(0);
 	WIM_HelpScrollFrame:UpdateScrollChildRect();
 end
