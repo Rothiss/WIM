@@ -966,3 +966,42 @@ function WIM_Help_Credits_Click()
 	
 	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
 end
+
+-- Temporary diagnostic: run /wimdbghelp while the Version History tab is open
+-- to dump the help window scroll geometry and pinpoint the dead-space issue.
+SLASH_WIMDBGHELP1 = "/wimdbghelp"
+SlashCmdList["WIMDBGHELP"] = function()
+	local text = WIM_HelpScrollFrameScrollChildText
+	local child = WIM_HelpScrollFrameScrollChild
+	local sf = WIM_HelpScrollFrame
+	local bar = WIM_HelpScrollFrameScrollBar
+
+	local function num(v)
+		return type(v) == "number" and string.format("%.0f", v) or "nil"
+	end
+
+	local strH, strW
+	if text and text.GetStringHeight then
+		strH = text:GetStringHeight()
+		strW = text:GetStringWidth()
+	end
+
+	local barMin, barMax = bar and bar:GetMinMaxValues() or nil
+	local msg = string.format(
+		"|cff00ff00[WIM]|r TEXT h=%s strH=%s strW=%s | CHILD w=%s h=%s top=%s | VIEWPORT w=%s h=%s top=%s | BAR min=%s max=%s val=%s | SCROLL v=%s",
+		num(text and text:GetHeight()),
+		num(strH),
+		num(strW),
+		num(child and child:GetWidth()),
+		num(child and child:GetHeight()),
+		num(child and child:GetTop()),
+		num(sf and sf:GetWidth()),
+		num(sf and sf:GetHeight()),
+		num(sf and sf:GetTop()),
+		num(barMin),
+		num(barMax),
+		num(bar and bar:GetValue()),
+		num(sf and sf.GetVerticalScroll and sf:GetVerticalScroll())
+	)
+	DEFAULT_CHAT_FRAME:AddMessage(msg)
+end
