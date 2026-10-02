@@ -922,13 +922,26 @@ end
 
 local function WIM_Help_SetText(text)
 	local textString = WIM_HelpScrollFrameScrollChildText
+	local scrollFrame = WIM_HelpScrollFrame
+	local scrollChild = WIM_HelpScrollFrameScrollChild
+	local scrollBar = WIM_HelpScrollFrameScrollBar
+
 	textString:SetText(text)
-	textString:SetWidth(500)
-	local scrollChild = textString:GetParent()
-	scrollChild:SetWidth(500)
+	textString:SetWidth(scrollFrame:GetWidth())
+	scrollChild:SetWidth(scrollFrame:GetWidth())
 	scrollChild:SetHeight(textString:GetHeight() + 2)
-	WIM_HelpScrollFrame:UpdateScrollChildRect()
-	WIM_HelpScrollFrameScrollBar:SetValue(0)
+
+	scrollFrame:UpdateScrollChildRect()
+
+	-- Establish the scroll range explicitly (client-independent) so the
+	-- content height is honored even when UpdateScrollChildRect can't derive
+	-- a range from a FontString child, then reset the position to the top.
+	local maxScroll = math.max(0, scrollChild:GetHeight() - scrollFrame:GetHeight())
+	scrollBar:SetMinMaxValues(0, maxScroll)
+	scrollBar:SetValue(0)
+	if scrollFrame.SetVerticalScroll then
+		scrollFrame:SetVerticalScroll(0)
+	end
 end
 
 function WIM_Help_Description_Click()

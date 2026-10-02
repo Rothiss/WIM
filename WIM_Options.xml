@@ -4591,10 +4591,7 @@
 						</Size>
 						<Layers>
 							<Layer>
-								<FontString name="$parentText" font="Fonts\FRIZQT__.TTF" justifyH="LEFT">
-									<Size>
-										<AbsDimension x="500" y="0"/>
-									</Size>
+								<FontString name="$parentText" font="Fonts\FRIZQT__.TTF" justifyH="LEFT" wrap="true">
 									<Anchors>
 										<Anchor point="TOPLEFT">
 											<Offset>
