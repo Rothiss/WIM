@@ -1,6 +1,9 @@
 if GetLocale() ~= "frFR" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.14 (02/10/2026)|cffffffff
+[*] - Historique des versions corrigé dans la fenêtre d'aide : il n'affiche plus d'espace vide au-dessus/en dessous de la liste ni ne s'arrête aux anciennes versions — tout l'historique s'affiche et défile désormais correctement
+
 |rVersion 1.3.13 (02/10/2026)|cffffffff
 [*] - Correctif : Maj (Shift) ne reste plus bloquée et ne bloque plus les barres d'actions/raccourcis quand une fenêtre de chat est ouverte
 [*] - L'insertion de liens avec Maj+clic ne fonctionne plus que lorsque vous tapez réellement dans une fenêtre de conversation

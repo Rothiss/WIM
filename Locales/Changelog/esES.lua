@@ -1,6 +1,9 @@
 if GetLocale() ~= "esES" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersión 1.3.14 (02/10/2026)|cffffffff
+[*] - Se corrigió el historial de versiones en la ventana de ayuda: ya no muestra espacio en blanco encima/debajo de la lista ni se corta en versiones antiguas — ahora se muestra y se desplaza por todo el historial correctamente
+
 |rVersión 1.3.13 (02/10/2026)|cffffffff
 [*] - Se corrigió que Shift se quedara atascado y bloqueaba las barras de acción/accesos rápidos con una ventana de chat abierta
 [*] - El enlazado con Shift+clic ahora solo funciona mientras escribes en una ventana de conversación

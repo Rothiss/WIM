@@ -920,50 +920,92 @@ local function WIM_TrimWhitespaceLines(text)
 	return text
 end
 
-local WIM_HelpScrollOffset = 0
-local WIM_HelpMaxScroll = 0
-local WIM_HelpScrollStep = 20
-local WIM_HelpScrollHooked = false
+local WIM_HelpBlockFrames = {}
+local WIM_HelpBlockGap = 8
+local WIM_HelpContentHeight = 0
 
-local function WIM_Help_SetScroll(offset)
-	offset = math.max(0, math.min(offset, WIM_HelpMaxScroll))
-	WIM_HelpScrollOffset = offset
-	WIM_HelpScrollFrame:SetVerticalScroll(offset)
-	local scrollBar = WIM_HelpScrollFrameScrollBar
-	scrollBar:SetMinMaxValues(0, math.max(WIM_HelpMaxScroll, 1))
-	scrollBar:SetValue(offset)
-end
-
--- The default UIPanelScrollFrameTemplate range never materializes for this
--- text-only scroll child (GetMinMaxValues stays nil), so manage the scroll
--- offset ourselves and drive the ScrollFrame directly.
-local function WIM_Help_EnsureScrollHook()
-	if WIM_HelpScrollHooked then
-		return
+-- Render the help text as stacked child frames (one per block of lines) inside
+-- the scroll child. This client never computes a scroll range for a bare text
+-- widget, but it ranges real Frames fine (same as the working lists elsewhere),
+-- so giving it frame children restores the native wheel/scrollbar behavior.
+local function WIM_Help_ClearBlocks()
+	for _, frame in ipairs(WIM_HelpBlockFrames) do
+		frame:Hide()
 	end
-	WIM_HelpScrollHooked = true
-	WIM_HelpScrollFrame:SetScript("OnMouseWheel", function(_, delta)
-		WIM_Help_SetScroll(WIM_HelpScrollOffset - delta * WIM_HelpScrollStep)
-	end)
+	WIM_HelpBlockFrames = {}
+	WIM_HelpContentHeight = 0
 end
 
-local function WIM_Help_RefreshScrollRange()
-	local textString = WIM_HelpScrollFrameScrollChildText
+local function WIM_Help_BuildBlocks(text, scrollChild, width)
+	WIM_Help_ClearBlocks()
+
+	local blocks = {}
+	local current = {}
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		if line == "" then
+			if #current > 0 then
+				blocks[#blocks + 1] = table.concat(current, "\n")
+				current = {}
+			end
+		else
+			current[#current + 1] = line
+		end
+	end
+	if #current > 0 then
+		blocks[#blocks + 1] = table.concat(current, "\n")
+	end
+
+	local previous
+	for i = 1, #blocks do
+		local frame = CreateFrame("Frame", nil, scrollChild)
+		frame:SetWidth(width)
+
+		local fs = frame:CreateFontString(nil, "ARTWORK")
+		fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+		fs:SetTextColor(1, 0.8196079, 0)
+		fs:SetShadowColor(0, 0, 0)
+		fs:SetShadowOffset(1, -1)
+		fs:SetJustifyH("LEFT")
+		fs:SetWidth(width)
+		fs:SetText(blocks[i])
+		fs:ClearAllPoints()
+		fs:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+
+		frame:SetHeight(fs:GetHeight())
+
+		if previous then
+			frame:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -WIM_HelpBlockGap)
+		else
+			frame:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
+		end
+
+		WIM_HelpBlockFrames[i] = frame
+		WIM_HelpContentHeight = WIM_HelpContentHeight + frame:GetHeight() + WIM_HelpBlockGap
+		previous = frame
+	end
+
+	if WIM_HelpContentHeight > 0 then
+		WIM_HelpContentHeight = WIM_HelpContentHeight - WIM_HelpBlockGap
+	end
+end
+
+local function WIM_Help_SetText(text)
 	local scrollFrame = WIM_HelpScrollFrame
 	local scrollChild = WIM_HelpScrollFrameScrollChild
 
 	scrollChild:SetWidth(scrollFrame:GetWidth())
-	scrollChild:SetHeight(textString:GetHeight() + 2)
-	WIM_HelpMaxScroll = math.max(0, scrollChild:GetHeight() - scrollFrame:GetHeight())
-	WIM_Help_SetScroll(0)
-end
+	WIM_Help_BuildBlocks(text, scrollChild, scrollFrame:GetWidth())
 
-local function WIM_Help_SetText(text)
-	local textString = WIM_HelpScrollFrameScrollChildText
-	textString:SetText(text)
-	textString:SetWidth(WIM_HelpScrollFrame:GetWidth())
-	WIM_Help_EnsureScrollHook()
-	WIM_Help_RefreshScrollRange()
+	local scrollBar = WIM_HelpScrollFrameScrollBar
+	local maxScroll = math.max(0, WIM_HelpContentHeight - scrollFrame:GetHeight())
+	if scrollBar then
+		scrollBar:SetMinMaxValues(0, math.max(maxScroll, 1))
+		scrollBar:SetValue(0)
+	end
+	scrollFrame:UpdateScrollChildRect()
+	if scrollFrame.SetVerticalScroll then
+		scrollFrame:SetVerticalScroll(0)
+	end
 end
 
 function WIM_Help_Description_Click()
@@ -1000,43 +1042,4 @@ function WIM_Help_Credits_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	
 	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
-end
-
--- Temporary diagnostic: run /wimdbghelp while the Version History tab is open
--- to dump the help window scroll geometry and pinpoint the dead-space issue.
-SLASH_WIMDBGHELP1 = "/wimdbghelp"
-SlashCmdList["WIMDBGHELP"] = function()
-	local text = WIM_HelpScrollFrameScrollChildText
-	local child = WIM_HelpScrollFrameScrollChild
-	local sf = WIM_HelpScrollFrame
-	local bar = WIM_HelpScrollFrameScrollBar
-
-	local function num(v)
-		return type(v) == "number" and string.format("%.0f", v) or "nil"
-	end
-
-	local strH, strW
-	if text and text.GetStringHeight then
-		strH = text:GetStringHeight()
-		strW = text:GetStringWidth()
-	end
-
-	local barMin, barMax = bar and bar:GetMinMaxValues() or nil
-	local msg = string.format(
-		"|cff00ff00[WIM]|r TEXT h=%s strH=%s strW=%s | CHILD w=%s h=%s top=%s | VIEWPORT w=%s h=%s top=%s | BAR min=%s max=%s val=%s | SCROLL v=%s",
-		num(text and text:GetHeight()),
-		num(strH),
-		num(strW),
-		num(child and child:GetWidth()),
-		num(child and child:GetHeight()),
-		num(child and child:GetTop()),
-		num(sf and sf:GetWidth()),
-		num(sf and sf:GetHeight()),
-		num(sf and sf:GetTop()),
-		num(barMin),
-		num(barMax),
-		num(bar and bar:GetValue()),
-		num(sf and sf.GetVerticalScroll and sf:GetVerticalScroll())
-	)
-	DEFAULT_CHAT_FRAME:AddMessage(msg)
 end

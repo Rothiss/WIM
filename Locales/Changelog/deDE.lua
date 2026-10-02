@@ -1,6 +1,9 @@
 if GetLocale() ~= "deDE" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.14 (02.10.2026)|cffffffff
+[*] - Der Versionsverlauf im Hilfefenster wurde behoben: Es erscheint kein leerer Platz mehr über/unter der Liste und ältere Versionen werden nicht mehr abgeschnitten — der gesamte Verlauf wird nun korrekt angezeigt und scrollt
+
 |rVersion 1.3.13 (02.10.2026)|cffffffff
 [*] - Shift bleibt nicht mehr hängen und blockiert nicht länger Aktionsleisten/Tastenkürzel, solange ein Chatfenster geöffnet ist
 [*] - Shift+Klick-Verlinken funktioniert jetzt nur noch, während du wirklich in einem Chatfenster tippst

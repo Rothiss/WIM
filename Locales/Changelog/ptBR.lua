@@ -1,6 +1,9 @@
 if GetLocale() ~= "ptBR" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersão 1.3.14 (02/10/2026)|cffffffff
+[*] - Corrigido o histórico de versões na janela de ajuda: não mostra mais espaços vazios acima/abaixo da lista nem corta as versões mais antigas — todo o histórico agora é exibido e rolado corretamente
+
 |rVersão 1.3.13 (02/10/2026)|cffffffff
 [*] - Corrigido o Shift que ficava travado e bloqueava as barras de ação/atalhos com uma janela de chat aberta
 [*] - Vincular com Shift+clique agora só funciona enquanto você digita em uma janela de conversa
