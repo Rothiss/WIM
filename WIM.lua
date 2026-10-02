@@ -4,7 +4,6 @@ WIM_Windows = {};
 WIM_EditBoxInFocus = nil;
 WIM_NewMessageFlag = false;
 WIM_NewMessageCount = 0;
-WIM_Icon_TheMenu = nil;
 WIM_Icon_UpdateInterval = .5;
 WIM_CascadeStep = 0;
 WIM_MaxMenuCount = 20;
@@ -12,7 +11,6 @@ WIM_ClassIcons = {};
 WIM_ClassColors = {};
 WIM_PlayerCache = {}
 WIM_PlayerCacheQueue = {}
-WIM_WhisperedTo = {}
 WIM_LastWhoSent = nil
 WIM_WhoScanInProgress = false
 WIM_IsGM = false
@@ -488,7 +486,6 @@ function WIM_ChatFrame_OnEvent(event)
 			end
 		end
 		
-		WIM_WhisperedTo[receiver] = true
 		if WIM_FilterResult(content) ~= 1 and WIM_FilterResult(content) ~= 2 then
 			msg = "[|Hplayer:"..UnitName("player").."|h"..WIM_GetAlias(UnitName("player"), true).."|h]: "..content
 			WIM_PostMessage(receiver, msg, 2, UnitName("player"), content)
@@ -826,7 +823,6 @@ function WIM_SetWindowProps(theWin)
 	else
 		WIM_RemoveEscapeWindow(theWin);
 	end
-	--WIM_SetTabFrameProps();
 end
 
 
@@ -1018,14 +1014,6 @@ function WIM_RGBtoHex(r,g,b)
 	return string.format ("%.2x%.2x%.2x",r*255,g*255,b*255)
 end
 
-function WIM_Icon_OnEnter()
-	GameTooltip:SetOwner(this, "ANCHOR_LEFT");
-	GameTooltip:SetText("WIM v"..WIM_VERSION.."              ");
-	GameTooltip:AddDoubleLine("Conversation Menu", "Left-Click", 1,1,1,1,1,1);
-	GameTooltip:AddDoubleLine("Show New Messages", "Right-Click", 1,1,1,1,1,1);
-	GameTooltip:AddDoubleLine("WIM Options", "/wim", 1,1,1,1,1,1);
-end
-
 function WIM_ShowNewMessages()
 	for key in WIM_Windows do
 		if(WIM_Windows[key].newMSG == true) then
@@ -1045,16 +1033,6 @@ end
 function WIM_HideAll()
 	for key in WIM_Windows do
 		getglobal(WIM_Windows[key].frame):Hide();
-	end
-end
-
-function WIM_CloseAllConvos()
-	local keys = {}
-	for key in WIM_Windows do
-		tinsert(keys, key)
-	end
-	for _, key in ipairs(keys) do
-		WIM_CloseConvo(key)
 	end
 end
 
@@ -1488,54 +1466,7 @@ function WIM_Split(theString, thePattern)
 	return t
 end
 
-function WIM_SetTabFrameProps()
-	WIM_TabFrame:SetScale(WIM_Data.windowSize * 1);
-	WIM_TabFrame:SetAlpha(WIM_Data.windowAlpha);
-end
-
-function WIM_UpdateTabs()
-	local tabs = {};
-	local offset = 0;
-	
-	for key in WIM_IconItems do
-		table.insert(tabs, key);
-	end
-	
-	for i=1,10 do 
-		local tab = getglobal("WIM_TabFrameTab"..i);
-		tab:Hide();
-		if(tabs[i+offset]) then
-			tab:SetText(WIM_GetAlias(tabs[i+offset], true));
-			tab:Show();
-			tab.theUser=tabs[i+offset];
-		else
-			tab:Hide();
-			tab.theUser="";
-		end
-	end
-	
-end
-
+-- Intentionally kept as an empty hook: third-party addons (e.g. pfUI)
+-- override this to style WIM's chat windows; WIM.xml calls it on show.
 function WIM_WindowOnShow()
-end
-
-function WIM_GetTabByUser(theUser)
-	for i=1,10 do 
-		local tab = getglobal("WIM_TabFrameTab"..i);
-		if(string.upper(theUser) == string.upper(tab.theUser)) then
-			return tab;
-		end
-	end
-	return nil;
-end
-
-function WIM_TabSetSelected(theUser)
-	for i=1,10 do 
-		local tab = getglobal("WIM_TabFrameTab"..i);
-		if(string.upper(theUser) == string.upper(tab.theUser)) then
-			PanelTemplates_SelectTab(tab);
-		else
-			PanelTemplates_DeselectTab(tab);
-		end
-	end
 end

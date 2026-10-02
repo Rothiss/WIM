@@ -179,52 +179,51 @@ function WIM_Options_UpdateSwatchColor(r,g,b)
 	getglobal(WIM_Options_CurrentSwatch.."_ColorSwatchNormalTexture"):SetVertexColor(r,g,b);
 end
 
+local WIM_Options_TabInfo = {
+	{ tab = "WIM_OptionsOptionTab1", panel = "WIM_OptionsTabbedFrameGeneral" },
+	{ tab = "WIM_OptionsOptionTab2", panel = "WIM_OptionsTabbedFrameWindow" },
+	{ tab = "WIM_OptionsOptionTab3", panel = "WIM_OptionsTabbedFrameFilter" },
+	{ tab = "WIM_OptionsOptionTab4", panel = "WIM_OptionsTabbedFrameHistory" },
+};
+
+local function WIM_Options_ShowTab(idx)
+	for i, info in ipairs(WIM_Options_TabInfo) do
+		local tab = getglobal(info.tab);
+		if(i == idx) then
+			PanelTemplates_SelectTab(tab);
+		else
+			PanelTemplates_DeselectTab(tab);
+		end
+	end
+	for i, info in ipairs(WIM_Options_TabInfo) do
+		local panel = getglobal(info.panel);
+		if(i == idx) then
+			panel:Show();
+		else
+			panel:Hide();
+		end
+	end
+	if(idx == 1) then
+		WIM_Options_GeneralScroll:Show();
+	else
+		WIM_Options_GeneralScroll:Hide();
+	end
+end
+
 function WIM_Options_General_Click()
-	PanelTemplates_SelectTab(WIM_OptionsOptionTab1);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab2);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab3);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab4);
-	WIM_OptionsTabbedFrameGeneral:Show();
-	WIM_OptionsTabbedFrameWindow:Hide();
-	WIM_OptionsTabbedFrameFilter:Hide();
-	WIM_OptionsTabbedFrameHistory:Hide();
-	WIM_Options_GeneralScroll:Show();
+	WIM_Options_ShowTab(1);
 end
 
 function WIM_Options_Windows_Click()
-	PanelTemplates_SelectTab(WIM_OptionsOptionTab2);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab1);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab3);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab4);
-	WIM_OptionsTabbedFrameGeneral:Hide();
-	WIM_OptionsTabbedFrameFilter:Hide();
-	WIM_OptionsTabbedFrameHistory:Hide();
-	WIM_OptionsTabbedFrameWindow:Show();
-	WIM_Options_GeneralScroll:Hide();
+	WIM_Options_ShowTab(2);
 end
 
 function WIM_Options_Filter_Click()
-	PanelTemplates_SelectTab(WIM_OptionsOptionTab3);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab1);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab2);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab4);
-	WIM_OptionsTabbedFrameGeneral:Hide();
-	WIM_OptionsTabbedFrameWindow:Hide();
-	WIM_OptionsTabbedFrameHistory:Hide();
-	WIM_OptionsTabbedFrameFilter:Show();
-	WIM_Options_GeneralScroll:Hide();
+	WIM_Options_ShowTab(3);
 end
 
 function WIM_Options_History_Click()
-	PanelTemplates_SelectTab(WIM_OptionsOptionTab4);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab1);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab2);
-	PanelTemplates_DeselectTab(WIM_OptionsOptionTab3);
-	WIM_OptionsTabbedFrameGeneral:Hide();
-	WIM_OptionsTabbedFrameWindow:Hide();
-	WIM_OptionsTabbedFrameFilter:Hide();
-	WIM_OptionsTabbedFrameHistory:Show();
-	WIM_Options_GeneralScroll:Hide();
+	WIM_Options_ShowTab(4);
 end
 
 function WIM_Options_SupressWispsClicked()
@@ -1017,38 +1016,37 @@ local function WIM_Help_SetText(text)
 	end
 end
 
+local WIM_Help_TabInfo = {
+	{ tab = "WIM_HelpTab1", textKey = "WIM_DESCRIPTION" },
+	{ tab = "WIM_HelpTab2", textKey = "WIM_CHANGE_LOG" },
+	{ tab = "WIM_HelpTab3", textKey = "WIM_DIDYOUKNOW" },
+	{ tab = "WIM_HelpTabCredits", textKey = "WIM_CREDITS" },
+};
+
+local function WIM_Help_ShowTab(idx)
+	for i, info in ipairs(WIM_Help_TabInfo) do
+		local tab = getglobal(info.tab);
+		if(i == idx) then
+			PanelTemplates_SelectTab(tab);
+		else
+			PanelTemplates_DeselectTab(tab);
+		end
+	end
+	WIM_Help_SetText(WIM_TrimWhitespaceLines(getglobal(WIM_Help_TabInfo[idx].textKey)));
+end
+
 function WIM_Help_Description_Click()
-	PanelTemplates_SelectTab(WIM_HelpTab1);
-	PanelTemplates_DeselectTab(WIM_HelpTab2);
-	PanelTemplates_DeselectTab(WIM_HelpTab3);
-	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
-	
-	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_DESCRIPTION));
+	WIM_Help_ShowTab(1);
 end
 
 function WIM_Help_ChangeLog_Click()
-	PanelTemplates_SelectTab(WIM_HelpTab2);
-	PanelTemplates_DeselectTab(WIM_HelpTab1);
-	PanelTemplates_DeselectTab(WIM_HelpTab3);
-	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
-	
-	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CHANGE_LOG));
+	WIM_Help_ShowTab(2);
 end
 
 function WIM_Help_DidYouKnow_Click()
-	PanelTemplates_SelectTab(WIM_HelpTab3);
-	PanelTemplates_DeselectTab(WIM_HelpTab1);
-	PanelTemplates_DeselectTab(WIM_HelpTab2);
-	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
-	
-	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_DIDYOUKNOW));
+	WIM_Help_ShowTab(3);
 end
 
 function WIM_Help_Credits_Click()
-	PanelTemplates_SelectTab(WIM_HelpTabCredits);
-	PanelTemplates_DeselectTab(WIM_HelpTab1);
-	PanelTemplates_DeselectTab(WIM_HelpTab2);
-	PanelTemplates_DeselectTab(WIM_HelpTab3);
-	
-	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
+	WIM_Help_ShowTab(4);
 end
