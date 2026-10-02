@@ -708,15 +708,22 @@ end
 
 function WIM_UpdateScrollBars(smf)
 	local parentName = smf:GetParent():GetName();
-	if(smf:AtTop()) then
-		getglobal(parentName.."ScrollUp"):Disable();
-	else
-		getglobal(parentName.."ScrollUp"):Enable();
+	if(getglobal(parentName.."ScrollUp")) then
+		if(smf:AtTop()) then
+			getglobal(parentName.."ScrollUp"):Disable();
+		else
+			getglobal(parentName.."ScrollUp"):Enable();
+		end
 	end
-	if(smf:AtBottom()) then
-		getglobal(parentName.."ScrollDown"):Disable();
-	else
-		getglobal(parentName.."ScrollDown"):Enable();
+	if(getglobal(parentName.."ScrollDown")) then
+		if(smf:AtBottom()) then
+			getglobal(parentName.."ScrollDown"):Disable();
+		else
+			getglobal(parentName.."ScrollDown"):Enable();
+		end
+	end
+	if(WIM_HistoryViewMessageListScrollBar_Update and getglobal(parentName.."ScrollBar")) then
+		WIM_HistoryViewMessageListScrollBar_Update();
 	end
 end
 
