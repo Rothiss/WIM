@@ -1,5 +1,10 @@
 WIM_VERSION = "1.3.14";
 
+-- OctoWoW is built on the Turtle WoW client. If the client does not expose its
+-- own OCTO_WOW_VERSION marker, inherit the Turtle-detection global so the WHO
+-- cooldown in WIM_Update stays throttled on OctoWoW/Turtle-based clients.
+OCTO_WOW_VERSION = OCTO_WOW_VERSION or TURTLE_WOW_VERSION or nil;
+
 WIM_Windows = {};
 WIM_EditBoxInFocus = nil;
 WIM_NewMessageFlag = false;
@@ -321,6 +326,18 @@ end
 WIM_Update_Elapsed = 0
 
 function WIM_Update(elapsed)
+	-- Skip per-frame work while the WHO queue is idle (truly empty and not
+	-- mid-scan), so WIM_Update doesn't tick every frame forever.
+	if not WIM_WhoScanInProgress then
+		local any = false
+		for _ in WIM_PlayerCacheQueue do
+			any = true
+			break
+		end
+		if not any then
+			return
+		end
+	end
 	WIM_Update_Elapsed = WIM_Update_Elapsed + elapsed
 	if WIM_Update_Elapsed < 1 then return end
 	WIM_Update_Elapsed = 0
@@ -981,7 +998,7 @@ function WIM_Icon_OnUpdate(elapsedTime)
 		return
 	end
 
-	this.TimeSinceLastUpdate = this.TimeSinceLastUpdate + elapsedTime 	
+	this.TimeSinceLastUpdate = (this.TimeSinceLastUpdate or 0) + elapsedTime 	
 
 	while this.TimeSinceLastUpdate > WIM_Icon_UpdateInterval do
 		if WIM_Icon_NewMessageFlash:IsVisible() then

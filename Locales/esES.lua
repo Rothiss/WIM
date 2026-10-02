@@ -1,5 +1,7 @@
 if GetLocale() ~= "esES" then return end
 
+BINDING_HEADER_WIMMOD = "WIM (WoW Instant Messenger)";
+
 BINDING_NAME_WIMSHOWNEW = "Mostrar nuevos mensajes";
 BINDING_NAME_WIMHISTORY = "Ver historial";
 BINDING_NAME_WIMENABLE = "Activar/Desactivar";

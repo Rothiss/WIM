@@ -167,21 +167,26 @@ function WIM_SetUpHooks()
 		-- Insert guard: only allow one Insert per frame to prevent double-insertion
 		-- (e.g. pfQuest inserts a quest link, then game original also inserts quest name)
 		local insertedThisFrame = false
+		local guardFrame = CreateFrame("Frame")
+		local function WIM_GuardInsertReset()
+			-- One-shot: clear the flag on the next frame so the guard frame
+			-- isn't running every rendered frame forever.
+			guardFrame:SetScript("OnUpdate", function()
+				insertedThisFrame = false
+				guardFrame:SetScript("OnUpdate", nil)
+			end)
+		end
 		ChatFrameEditBox.Insert = function(self, text)
 			if WIM_EditBoxInFocus then
 				if not insertedThisFrame then
 					insertedThisFrame = true
+					WIM_GuardInsertReset()
 					WIM_EditBoxInFocus:Insert(text)
 				end
 				return
 			end
 			origInsert(self, text)
 		end
-
-		local guardFrame = CreateFrame("Frame")
-		guardFrame:SetScript("OnUpdate", function()
-			insertedThisFrame = false
-		end)
 	end
 
 	do

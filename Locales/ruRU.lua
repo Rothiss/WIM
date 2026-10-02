@@ -1,5 +1,7 @@
 if GetLocale() ~= "ruRU" then return end
 
+BINDING_HEADER_WIMMOD = "WIM (WoW Instant Messenger)";
+
 BINDING_NAME_WIMSHOWNEW = "Показать новые сообщения"
 BINDING_NAME_WIMHISTORY = "Просмотр истории"
 BINDING_NAME_WIMENABLE = "Включить/выключить"
