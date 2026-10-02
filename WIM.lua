@@ -777,12 +777,13 @@ function WIM_Icon_UpdatePosition()
 		WIM_IconFrame:Hide();
 	else
 		if(WIM_Data.miniFreeMoving.enabled == false) then
+			local rad = WIM_Data.iconPosition * (math.pi / 180);
 			WIM_IconFrame:SetPoint(
 				"TOPLEFT",
 				"Minimap",
 				"TOPLEFT",
-				54 - (78 * cos(WIM_Data.iconPosition)),
-				(78 * sin(WIM_Data.iconPosition)) - 55
+				54 - (78 * cos(rad)),
+				(78 * sin(rad)) - 55
 			);
 		end
 		WIM_IconFrame:Show();
@@ -881,6 +882,7 @@ function WIM_Icon_DropDown_Update()
 	
 	
 	WIM_NewMessageCount = 0;
+	WIM_NewMessageFlag = false;
 	
 	if tCount == 0 then
 		getglobal("WIM_ConversationMenuTellButton1Close"):Hide()
@@ -891,7 +893,6 @@ function WIM_Icon_DropDown_Update()
 		if WIM_Data.sortAlpha then
 			table.sort(tList)
 		end
-		WIM_NewMessageFlag = false
 		for i=1,table.getn(tList) do
 			if WIM_Windows[tList[i]].newMSG and WIM_Windows[tList[i]].is_visible == false then
 				WIM_IconItems[tList[i]].color = "|cff"..WIM_RGBtoHex(77/255, 147/255, 224/255)
@@ -1231,9 +1232,20 @@ end
 
 function WIM_FilterResult(theMSG)
 	if(WIM_Data.enableFilter) then
-		local key, a, b;
+		local key;
 		for key in WIM_Filters do
-			if(strfind(strlower(theMSG), strlower(key)) ~= nil) then
+			-- Treat saved filter keys as literal text, not Lua patterns.
+			-- Escape pattern magic characters but keep a leading "^" as an anchor.
+			local pat = key;
+			local anchored = (strsub(pat, 1, 1) == "^");
+			if anchored then
+				pat = strsub(pat, 2);
+			end
+			pat = gsub(pat, "([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1");
+			if anchored then
+				pat = "^" .. pat;
+			end
+			if(strfind(strlower(theMSG), strlower(pat)) ~= nil) then
 				if(WIM_Filters[key] == "Ignore") then
 					return 1;
 				elseif(WIM_Filters[key] == "Block") then
