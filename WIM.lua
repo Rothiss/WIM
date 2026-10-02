@@ -339,9 +339,9 @@ function WIM_Update(elapsed)
 		return
 	end
 
-	-- WHO cooldown: 30s for Turtle WoW, 5s for vanilla. GMs skip cooldown but wait for response
+	-- WHO cooldown: 30s for OctoWoW, 5s for vanilla. GMs skip cooldown but wait for response
 	if not WIM_IsGM then
-		local WHO_COOLDOWN = TURTLE_WOW_VERSION and 30 or 5
+		local WHO_COOLDOWN = (TURTLE_WOW_VERSION or OCTO_WOW_VERSION) and 30 or 5
 		if WIM_LastWhoSent and GetTime() - WIM_LastWhoSent < WHO_COOLDOWN then
 			return
 		end

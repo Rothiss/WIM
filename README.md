@@ -1,6 +1,6 @@
 # WIM (WoW Instant Messenger)
 
-A World of Warcraft addon for Vanilla WoW (1.12.1) and [Turtle WoW](https://turtlecraft.gg) that gives whispers an instant messenger feel.
+A World of Warcraft addon for Vanilla WoW (1.12.1) and [OctoWoW](https://octowow.st) that gives whispers an instant messenger feel.
 
 WIM provides a dedicated chat window for each person you whisper with, keeping your conversations organized and separate from the main chat frame.
 
