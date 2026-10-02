@@ -183,7 +183,7 @@ WIM_Data_DEFAULTS = {
 	hookWispParse = true,
 };
 --[initialize defualt values
-WIM_Data = WIM_DeepCopy(WIM_Data_DEFAULTS);
+WIM_Data = WIM_Data or WIM_DeepCopy(WIM_Data_DEFAULTS);
 
 WIM_CascadeDirection = {
 	up = {
@@ -435,9 +435,11 @@ function WIM_ChatFrame_OnEvent(event)
 		else
 			afkType = "DND";
 		end
-		msg = "<"..afkType.."> |Hplayer:"..arg2.."|h"..arg2.."|h: "..arg1;
-		WIM_PostMessage(arg2, msg, 3);
-		ChatEdit_SetLastTellTarget(ChatFrameEditBox,arg2);
+		if(arg2 and arg2 ~= "") then
+			msg = "<"..afkType.."> |Hplayer:"..arg2.."|h"..arg2.."|h: "..arg1;
+			WIM_PostMessage(arg2, msg, 3);
+			ChatEdit_SetLastTellTarget(ChatFrameEditBox,arg2);
+		end
 	elseif event == 'CHAT_MSG_WHISPER' then
 		local content, sender = arg1, arg2
 		local isGMSender = arg6 == "GM" -- arg6 contains chat flags like "GM", "DEV", etc.
@@ -728,7 +730,7 @@ function WIM_UpdateScrollBars(smf)
 end
 
 function WIM_isLinkURL(link)
-	if (strsub(link, 1, 3) == "url") then
+	if (strsub(link, 1, 4) == "url:") then
 		return true;
 	else
 		return false;
@@ -758,6 +760,8 @@ function WIM_ConvertURLtoLinks(text)
 end
 
 function WIM_SlashCommand(msg)
+	msg = string.gsub(msg or "", "^%s+", "");
+	msg = string.gsub(msg, "%s+$", "");
 	if(msg == "" or msg == nil) then
 		WIM_Options:Show();
 	elseif(msg == "reset") then
