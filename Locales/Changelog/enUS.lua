@@ -1,3 +1,5 @@
+-- English fallback: only used when no matching locale changelog loaded.
+if WIM_CHANGE_LOG == nil then
 WIM_CHANGE_LOG = [[
 |rVersion 1.3.14 (10-02-2026)|cffffffff
 [*] - Fixed the Version History in the help window: it no longer shows empty space above/below the list or cuts off at older versions — the full history now displays and scrolls correctly
@@ -165,3 +167,4 @@ WIM_CHANGE_LOG = [[
 [!] - Initial public release.
 
 ]]
+end

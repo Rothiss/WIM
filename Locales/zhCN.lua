@@ -1,5 +1,7 @@
 if GetLocale() ~= "zhCN" then return end
 
+BINDING_HEADER_WIMMOD = "WIM (WoW Instant Messenger)";
+
 BINDING_NAME_WIMSHOWNEW = "显示新消息";
 BINDING_NAME_WIMHISTORY = "查看历史";
 BINDING_NAME_WIMENABLE = "启用/禁用";

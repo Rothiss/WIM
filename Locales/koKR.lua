@@ -1,5 +1,7 @@
 if GetLocale() ~= "koKR" then return end
 
+BINDING_HEADER_WIMMOD = "WIM (WoW Instant Messenger)";
+
 BINDING_NAME_WIMSHOWNEW = "새 메시지 표시";
 BINDING_NAME_WIMHISTORY = "기록 보기";
 BINDING_NAME_WIMENABLE = "활성화/비활성화";
