@@ -582,16 +582,16 @@
 					</Frame>
 					<ScrollingMessageFrame name="$parentScrollingMessageFrame" enableMouse="true" fade="false" maxLines="500" movable="true">
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoing="TOPLEFT">
-								<Offset>
-									<AbsDimension x="10" y="-30" />
-								</Offset>
-							</Anchor>
-							<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoing="TOPLEFT">
-								<Offset>
-									<AbsDimension x="-35" y="15" />
-								</Offset>
-							</Anchor>
+<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="TOPLEFT">
+									<Offset>
+										<AbsDimension x="10" y="-30" />
+									</Offset>
+								</Anchor>
+								<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT">
+									<Offset>
+										<AbsDimension x="-35" y="15" />
+									</Offset>
+								</Anchor>
 						</Anchors>
 						<FontString font="Fonts\FRIZQT__.TTF" justifyH="LEFT">
 							<FontHeight>
@@ -726,7 +726,6 @@
 				WIM_HistoryViewFiltersScrollBar_Update();
 			</OnShow>
 			<OnHide>
-				WIM_Help_Description_Click();
 				PlaySound("igMainMenuClose");
 			</OnHide>
 		</Scripts>

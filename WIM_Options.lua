@@ -928,17 +928,27 @@ local WIM_HelpContentHeight = 0
 -- the scroll child. This client never computes a scroll range for a bare text
 -- widget, but it ranges real Frames fine (same as the working lists elsewhere),
 -- so giving it frame children restores the native wheel/scrollbar behavior.
-local function WIM_Help_ClearBlocks()
-	for _, frame in ipairs(WIM_HelpBlockFrames) do
-		frame:Hide()
+-- Frames are pooled by index and reused (1.12 has no frame destruction, so we
+-- never grow the pool beyond the largest tab's block count).
+local function WIM_Help_GetBlock(i, width)
+	local frame = WIM_HelpBlockFrames[i]
+	if not frame then
+		frame = CreateFrame("Frame", nil, WIM_HelpScrollFrameScrollChild)
+		local fs = frame:CreateFontString(nil, "ARTWORK")
+		fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+		fs:SetTextColor(1, 0.8196079, 0)
+		fs:SetShadowColor(0, 0, 0)
+		fs:SetShadowOffset(1, -1)
+		fs:SetJustifyH("LEFT")
+		frame.fs = fs
+		WIM_HelpBlockFrames[i] = frame
 	end
-	WIM_HelpBlockFrames = {}
-	WIM_HelpContentHeight = 0
+	frame:SetWidth(width)
+	frame.fs:SetWidth(width)
+	return frame
 end
 
 local function WIM_Help_BuildBlocks(text, scrollChild, width)
-	WIM_Help_ClearBlocks()
-
 	local blocks = {}
 	local current = {}
 	for line in (text .. "\n"):gmatch("(.-)\n") do
@@ -956,32 +966,31 @@ local function WIM_Help_BuildBlocks(text, scrollChild, width)
 	end
 
 	local previous
+	WIM_HelpContentHeight = 0
 	for i = 1, #blocks do
-		local frame = CreateFrame("Frame", nil, scrollChild)
-		frame:SetWidth(width)
+		local frame = WIM_Help_GetBlock(i, width)
+		local fs = frame.fs
 
-		local fs = frame:CreateFontString(nil, "ARTWORK")
-		fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
-		fs:SetTextColor(1, 0.8196079, 0)
-		fs:SetShadowColor(0, 0, 0)
-		fs:SetShadowOffset(1, -1)
-		fs:SetJustifyH("LEFT")
-		fs:SetWidth(width)
 		fs:SetText(blocks[i])
 		fs:ClearAllPoints()
 		fs:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
-
 		frame:SetHeight(fs:GetHeight())
 
+		frame:ClearAllPoints()
 		if previous then
 			frame:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -WIM_HelpBlockGap)
 		else
 			frame:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 		end
+		frame:Show()
 
-		WIM_HelpBlockFrames[i] = frame
 		WIM_HelpContentHeight = WIM_HelpContentHeight + frame:GetHeight() + WIM_HelpBlockGap
 		previous = frame
+	end
+
+	-- Hide any pooled frames left over from a larger earlier tab.
+	for i = #blocks + 1, #WIM_HelpBlockFrames do
+		WIM_HelpBlockFrames[i]:Hide()
 	end
 
 	if WIM_HelpContentHeight > 0 then

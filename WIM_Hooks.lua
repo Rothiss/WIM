@@ -189,16 +189,24 @@ function WIM_SetUpHooks()
 		local orig = ChatFrameEditBox:GetScript('OnTextSet')
 		ChatFrameEditBox:SetScript('OnTextSet', function()
 			if not supress then
-				orig()
+				if orig then
+					orig()
+				end
 			else
 				supress = false
 			end
 		end)
+
+		local origChar = ChatFrameEditBox:GetScript('OnChar')
 		ChatFrameEditBox:SetScript('OnChar', function()
 			if IsControlKeyDown() then -- TODO problem is ctrl-v, maybe find a better solution
+				if origChar then
+					origChar()
+				end
 				return
 			end
 
+			local completed = false
 			local text = this:GetText()
 			local _, _, command, name = strfind(text, '^(/%S+)%s*(%a*)')
 			if command then
@@ -211,6 +219,7 @@ function WIM_SetUpHooks()
 							local function tryCompleting(candidate)
 								if strsub(strupper(candidate), 1, strlen(name)) == strupper(name) then
 									supress = true
+									completed = true
 									this:SetText(text..strsub(candidate, strlen(name) + 1))
 									this:HighlightText(strlen(text), -1)
 									return
@@ -235,6 +244,14 @@ function WIM_SetUpHooks()
 						break
 					end
 					i = i + 1
+				end
+			end
+
+			-- Chain the original handler for chars WIM did not complete,
+			-- so other addons' chat behaviour keeps working.
+			if not completed then
+				if origChar then
+					origChar()
 				end
 			end
 		end)
@@ -275,7 +292,7 @@ function WIM_SetUpHooks()
 	--Hook SetItemRef for URL display
 	WIM_SetItemRef_orig = SetItemRef;
 	SetItemRef = function(link, text, button)
-		if WIM_isLinkURL(link) then
+		if link and WIM_isLinkURL(link) then
 			WIM_DisplayURL(link)
 		else
 			WIM_SetItemRef_orig(link, text, button)
