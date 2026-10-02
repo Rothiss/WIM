@@ -254,31 +254,6 @@ function WIM_History_EnsureSliderWired()
 	end
 end
 
--- Temporary diagnostic: run /wimdbghist while the History window is open.
-SLASH_WIMDBGHIST1 = "/wimdbghist";
-SlashCmdList["WIMDBGHIST"] = function()
-	local sb = WIM_HistoryFrameMessageListScrollBar;
-	local smf = WIM_HistoryFrameMessageListScrollingMessageFrame;
-	local slider = sb and WIM_History_GetSlider(sb);
-	local num, lines, so = "nil", "nil", "nil";
-	if smf then
-		if smf.GetNumMessages then num = tostring(smf:GetNumMessages() or 0) end
-		if smf.GetNumLinesDisplayed then lines = tostring(smf:GetNumLinesDisplayed() or 1) end
-		if smf.GetScrollOffset then so = tostring(smf:GetScrollOffset() or 0) end
-	end
-	local range = "n/a";
-	if slider then
-		local mn, mx = slider:GetMinMaxValues();
-		range = string.format("min=%s max=%s val=%s", tostring(mn), tostring(mx), tostring(slider:GetValue()));
-	end
-	DEFAULT_CHAT_FRAME:AddMessage(
-		"|cff00ff00[WIM]|r pos=" .. tostring(WIM_HistoryMsgPos) ..
-		" max=" .. tostring(WIM_HistoryMsgMax) ..
-		" | num=" .. num .. " lines=" .. lines .. " scrollOffset=" .. so
-	);
-	DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[WIM]|r slider: " .. range);
-end
-
 
 function WIM_HistoryView_ShowMessages()
 	local tStamp = "";
