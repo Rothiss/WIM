@@ -4587,26 +4587,21 @@
 				<ScrollChild>
 					<Frame name="$parentScrollChild" frameStrata="HIGH">
 						<Size>
-							<AbsDimension x="10" y="10"/>
+							<AbsDimension x="500" y="10"/>
 						</Size>
-						<Frames>
-							<SimpleHTML name="$parentText">
-								<Size>
-									<AbsDimension x="500" y="304"/>
-								</Size>
-								<Anchors>
-									<Anchor point="TOPLEFT">
-										<Offset>
-											<AbsDimension x="0" y="0"/>
-										</Offset>
-									</Anchor>
-									<Anchor point="BOTTOMRIGHT">
-										<Offset>
-											<AbsDimension x="0" y="0"/>
-										</Offset>
-									</Anchor>
-								</Anchors>
-								<FontString font="Fonts\FRIZQT__.TTF" justifyH="LEFT">
+						<Layers>
+							<Layer>
+								<FontString name="$parentText" font="Fonts\FRIZQT__.TTF" justifyH="LEFT">
+									<Size>
+										<AbsDimension x="500" y="0"/>
+									</Size>
+									<Anchors>
+										<Anchor point="TOPLEFT">
+											<Offset>
+												<AbsDimension x="0" y="0"/>
+											</Offset>
+										</Anchor>
+									</Anchors>
 									<FontHeight>
 										<AbsValue val="12" />
 									</FontHeight>
@@ -4618,8 +4613,8 @@
 										</Offset>
 									</Shadow>
 								</FontString>
-							</SimpleHTML>
-						</Frames>
+							</Layer>
+						</Layers>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>

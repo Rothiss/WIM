@@ -920,15 +920,24 @@ local function WIM_TrimWhitespaceLines(text)
 	return text
 end
 
+local function WIM_Help_SetText(text)
+	local textString = WIM_HelpScrollFrameScrollChildText
+	textString:SetText(text)
+	textString:SetWidth(500)
+	local scrollChild = textString:GetParent()
+	scrollChild:SetWidth(500)
+	scrollChild:SetHeight(textString:GetHeight() + 2)
+	WIM_HelpScrollFrame:UpdateScrollChildRect()
+	WIM_HelpScrollFrameScrollBar:SetValue(0)
+end
+
 function WIM_Help_Description_Click()
 	PanelTemplates_SelectTab(WIM_HelpTab1);
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_DESCRIPTION));
-	WIM_HelpScrollFrameScrollBar:SetValue(0);
-	WIM_HelpScrollFrame:UpdateScrollChildRect();
+	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_DESCRIPTION));
 end
 
 function WIM_Help_ChangeLog_Click()
@@ -937,9 +946,7 @@ function WIM_Help_ChangeLog_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_CHANGE_LOG));
-	WIM_HelpScrollFrameScrollBar:SetValue(0);
-	WIM_HelpScrollFrame:UpdateScrollChildRect();
+	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CHANGE_LOG));
 end
 
 function WIM_Help_DidYouKnow_Click()
@@ -948,9 +955,7 @@ function WIM_Help_DidYouKnow_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTabCredits);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_DIDYOUKNOW));
-	WIM_HelpScrollFrameScrollBar:SetValue(0);
-	WIM_HelpScrollFrame:UpdateScrollChildRect();
+	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_DIDYOUKNOW));
 end
 
 function WIM_Help_Credits_Click()
@@ -959,7 +964,5 @@ function WIM_Help_Credits_Click()
 	PanelTemplates_DeselectTab(WIM_HelpTab2);
 	PanelTemplates_DeselectTab(WIM_HelpTab3);
 	
-	WIM_HelpScrollFrameScrollChildText:SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
-	WIM_HelpScrollFrameScrollBar:SetValue(0);
-	WIM_HelpScrollFrame:UpdateScrollChildRect();
+	WIM_Help_SetText(WIM_TrimWhitespaceLines(WIM_CREDITS));
 end
