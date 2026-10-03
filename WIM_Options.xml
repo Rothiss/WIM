@@ -443,11 +443,6 @@
 				</Layers>
 				<Scripts>
 					<OnClick>
-						if ( this:GetChecked() ) then
-							PlaySound("igMainMenuOptionCheckBoxOff");
-						else
-							PlaySound("igMainMenuOptionCheckBoxOn");
-						end
 						WIM_Options_EnableWIMClicked();
 					</OnClick>
 				</Scripts>
@@ -709,11 +704,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_ShowShortcutBarClicked();
 							</OnClick>
 							<OnEnter>
@@ -765,11 +755,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_ShowTimeStampsClicked();
 							</OnClick>
 						</Scripts>
@@ -814,11 +799,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_CharacerInfoClicked();
 							</OnClick>
 							<OnEnter>
@@ -871,11 +851,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_CharacerInfoClassIconClicked();
 							</OnClick>
 							<OnEnter>
@@ -928,11 +903,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_CharacerInfoClassColorClicked();
 							</OnClick>
 							<OnEnter>
@@ -985,11 +955,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_CharacerInfoDetailsClicked();
 							</OnClick>
 							<OnEnter>
@@ -1017,10 +982,7 @@
 						</Anchors>
 						<Scripts>
 							<OnValueChanged>
-								WIM_Data.fontSize = this:GetValue();
-								WIM_SetAllWindowProps();
-								getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
-								WIM_HistoryFrameMessageListScrollingMessageFrame:SetFont("Fonts\\FRIZQT__.TTF",WIM_Data.fontSize);
+								WIM_Options_SliderChanged(this, "fontSize", 1, nil, function(v) WIM_HistoryFrameMessageListScrollingMessageFrame:SetFont("Fonts\\FRIZQT__.TTF", v); end);
 							</OnValueChanged>
 						</Scripts>
 					</Slider>
@@ -1037,9 +999,7 @@
 						</Anchors>
 						<Scripts>
 							<OnValueChanged>
-								WIM_Data.windowSize = (this:GetValue() / 100);
-								WIM_SetAllWindowProps();
-								getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
+								WIM_Options_SliderChanged(this, "windowSize", 0.01);
 							</OnValueChanged>
 						</Scripts>
 					</Slider>
@@ -1056,9 +1016,7 @@
 						</Anchors>
 						<Scripts>
 							<OnValueChanged>
-								WIM_Data.windowAlpha = (this:GetValue() / 100);
-								WIM_SetAllWindowProps();
-								getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
+								WIM_Options_SliderChanged(this, "windowAlpha", 0.01);
 							</OnValueChanged>
 						</Scripts>
 					</Slider>
@@ -1168,11 +1126,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_ShowMiniMapClick();
 							</OnClick>
 						</Scripts>
@@ -1217,11 +1170,6 @@
 						</Layers>
 						<Scripts>
 							<OnClick>
-								if ( this:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
 								WIM_Options_FreeMoving_Clicked();
 							</OnClick>
 							<OnEnter>
@@ -1246,8 +1194,7 @@
 						</Anchors>
 						<Scripts>
 							<OnValueChanged>
-								WIM_Icon_Move(this:GetValue());
-								getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
+								WIM_Options_SliderChanged(this, nil, nil, "noProps", function(v) WIM_Icon_Move(v); end);
 							</OnValueChanged>
 						</Scripts>
 					</Slider>
@@ -1427,11 +1374,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_AutoFocusClicked();
 											</OnClick>
 										</Scripts>
@@ -1476,11 +1418,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_KeepFocusClicked();
 											</OnClick>
 										</Scripts>
@@ -1526,11 +1463,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_KeepFocusRestedClicked();
 											</OnClick>
 										</Scripts>
@@ -1575,11 +1507,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_ShowToolTipsClicked();
 											</OnClick>
 										</Scripts>
@@ -1624,11 +1551,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_PopOnSendClicked();
 											</OnClick>
 										</Scripts>
@@ -1673,11 +1595,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_PopNewClicked();
 											</OnClick>
 										</Scripts>
@@ -1723,11 +1640,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_PopUpdateClicked();
 											</OnClick>
 										</Scripts>
@@ -1773,11 +1685,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_PopCombatClicked();
 											</OnClick>
 										</Scripts>
@@ -1822,11 +1729,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_SupressWispsClicked();
 											</OnClick>
 										</Scripts>
@@ -1871,11 +1773,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_PlaySoundWispClicked();
 											</OnClick>
 										</Scripts>
@@ -1920,11 +1817,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_SortOrderAlphaClicked();
 											</OnClick>
 										</Scripts>
@@ -1969,11 +1861,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_ShowAFKClicked();
 											</OnClick>
 										</Scripts>
@@ -2018,11 +1905,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_UseEscapeClicked();
 											</OnClick>
 											<OnEnter>
@@ -2074,11 +1956,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_InterceptSlashWispClicked();
 											</OnClick>
 											<OnEnter>
@@ -2155,11 +2032,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_WindowCascadeClicked();
 									</OnClick>
 								</Scripts>
@@ -2219,9 +2091,7 @@
 								</Anchors>
 								<Scripts>
 									<OnValueChanged>
-										WIM_Data.winSize.width = this:GetValue();
-										getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
-										WIM_SetAllWindowProps();
+										WIM_Options_SliderChanged(this, "winSize.width", 1, "propsLast");
 									</OnValueChanged>
 								</Scripts>
 							</Slider>
@@ -2238,9 +2108,7 @@
 								</Anchors>
 								<Scripts>
 									<OnValueChanged>
-										WIM_Data.winSize.height = this:GetValue();
-										getglobal(this:GetName().."EditBox"):SetText(this:GetValue());
-										WIM_SetAllWindowProps();
+										WIM_Options_SliderChanged(this, "winSize.height", 1, "propsLast");
 									</OnValueChanged>
 								</Scripts>
 							</Slider>
@@ -2311,11 +2179,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_AliasEnabledClicked();
 											</OnClick>
 										</Scripts>
@@ -2360,11 +2223,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_AliasShowAsCommentClicked();
 											</OnClick>
 										</Scripts>
@@ -2617,11 +2475,6 @@
 										</Layers>
 										<Scripts>
 											<OnClick>
-												if ( this:GetChecked() ) then
-													PlaySound("igMainMenuOptionCheckBoxOff");
-												else
-													PlaySound("igMainMenuOptionCheckBoxOn");
-												end
 												WIM_Options_FilteringEnabledClicked();
 											</OnClick>
 										</Scripts>
@@ -2882,11 +2735,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistoryEnabledClicked();
 									</OnClick>
 								</Scripts>
@@ -2931,11 +2779,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistoryRecordEveryoneClicked();
 									</OnClick>
 								</Scripts>
@@ -2981,11 +2824,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistoryRecordFriendsClicked();
 									</OnClick>
 								</Scripts>
@@ -3031,11 +2869,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistoryRecordGuildClicked();
 									</OnClick>
 								</Scripts>
@@ -3145,11 +2978,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistoryShowInMessageClicked();
 									</OnClick>
 								</Scripts>
@@ -3195,11 +3023,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistorySetMaxToStoreClicked();
 									</OnClick>
 								</Scripts>
@@ -3245,11 +3068,6 @@
 								</Layers>
 								<Scripts>
 									<OnClick>
-										if ( this:GetChecked() ) then
-											PlaySound("igMainMenuOptionCheckBoxOff");
-										else
-											PlaySound("igMainMenuOptionCheckBoxOn");
-										end
 										WIM_Options_HistorySetAutoDeleteClicked();
 									</OnClick>
 								</Scripts>
