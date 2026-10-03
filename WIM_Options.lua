@@ -5,10 +5,28 @@ WIM_Alias_Selected = "";
 WIM_Filter_Selected = "";
 WIM_History_Selected = "";
 
--- Shared checkbox handler: plays the toggle sound, writes a checked state into
--- WIM_Data and runs optional extra logic. `path` may be dotted for nested keys
--- (e.g. "historySettings.recordFriends").
+-- Resolve a dotted path ("historySettings.recordFriends") and set the value on
+-- WIM_Data (intermediate tables already exist from the defaults).
+local function WIM_Options_SetByPath(path, value)
+	local segs = {};
+	for segment in string.gmatch(path, "[^.]+") do
+		segs[#segs + 1] = segment;
+	end
+	local t = WIM_Data;
+	for i = 1, #segs - 1 do
+		t = t[segs[i]];
+	end
+	t[segs[#segs]] = value;
+end
+
+-- When true, programmatic option state changes (e.g. from WIM_Options_OnShow)
+-- apply silently; the checkbox toggle sound is only for real user clicks.
+local WIM_Options_SuppressSound = false;
+
 local function WIM_Options_PlayCheckSound(checked)
+	if(WIM_Options_SuppressSound) then
+		return;
+	end
 	if(checked) then
 		PlaySound("igMainMenuOptionCheckBoxOff");
 	else
@@ -20,19 +38,7 @@ local function WIM_Options_SetCheckedState(path, checkboxName, extra)
 	local checkbox = getglobal(checkboxName);
 	if(checkbox) then
 		WIM_Options_PlayCheckSound(checkbox:GetChecked());
-		local segs = {};
-		for segment in string.gmatch(path, "[^.]+") do
-			segs[#segs + 1] = segment;
-		end
-		local t = WIM_Data;
-		for i = 1, #segs - 1 do
-			t = t[segs[i]];
-		end
-		if(checkbox:GetChecked()) then
-			t[segs[#segs]] = true;
-		else
-			t[segs[#segs]] = false;
-		end
+		WIM_Options_SetByPath(path, checkbox:GetChecked() and true or false);
 	end
 	if(extra) then
 		extra(checkbox);
@@ -46,7 +52,7 @@ end
 function WIM_Options_SliderChanged(slider, key, multiplier, mode, extra)
 	local value = slider:GetValue();
 	if(key) then
-		WIM_Data[key] = value * (multiplier or 1);
+		WIM_Options_SetByPath(key, value * (multiplier or 1));
 	end
 	local editBox = getglobal(slider:GetName().."EditBox");
 	if(mode == "propsLast") then
@@ -65,6 +71,11 @@ end
 
 function WIM_Options_OnShow()
 	local tRGB;
+	WIM_Options_SuppressSound = true;
+
+	-- Purge literal dotted keys written by an earlier build.
+	WIM_Data["winSize.width"] = nil;
+	WIM_Data["winSize.height"] = nil;
 	
 	WIM_OptionsEnableWIM:SetChecked(WIM_Data.enableWIM);
 	
@@ -160,6 +171,7 @@ function WIM_Options_OnShow()
 		WIM_Options_General_Click();
 		WIM_Options_AlreadyShown = true;
 	end
+	WIM_Options_SuppressSound = false;
 end
 
 
