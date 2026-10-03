@@ -1,6 +1,18 @@
 if GetLocale() ~= "deDE" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.15 (03.10.2026)|cffffffff
+[*] - Die Nachrichtenliste des Verlaufs hat jetzt eine eigene Bildlaufleiste (passend zu den Benutzer- und Filterlisten) und scrollt korrekt
+[*] - Das Minikartensymbol wird nicht mehr an der falschen Stelle angezeigt
+[*] - Fehler behoben, wenn ein Flüsterfilter-Schlüsselwort Sonderzeichen enthielt
+[*] - Das Blinken für neue Nachrichten auf der Minikarte stoppt jetzt, sobald alle Unterhaltungen geschlossen sind
+[*] - Die Schieberegler für Fensterbreite und -höhe passen die WIM-Fenster wieder an
+[*] - Beim Öffnen des Optionsfensters werden keine Kontrollkästchen-Töne mehr abgespielt
+[*] - Verbesserte Kompatibilität mit anderen Addons (pfUI-Chatfenster-Design, Chat-Autovervollständigung)
+[*] - Links mit URLs öffnen jetzt wieder das Kopierfenster
+[*] - Slash-Befehle wie /wim akzeptieren jetzt zusätzliche Leerzeichen
+[*] - Verbesserte Leistung im Leerlauf
+
 |rVersion 1.3.14 (02.10.2026)|cffffffff
 [*] - Der Versionsverlauf im Hilfefenster wurde behoben: Es erscheint kein leerer Platz mehr über/unter der Liste und ältere Versionen werden nicht mehr abgeschnitten — der gesamte Verlauf wird nun korrekt angezeigt und scrollt
 

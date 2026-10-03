@@ -1,4 +1,4 @@
-WIM_VERSION = "1.3.14";
+WIM_VERSION = "1.3.15";
 
 -- OctoWoW is built on the Turtle WoW client. If the client does not expose its
 -- own OCTO_WOW_VERSION marker, inherit the Turtle-detection global so the WHO

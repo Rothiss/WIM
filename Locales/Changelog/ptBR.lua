@@ -1,6 +1,18 @@
 if GetLocale() ~= "ptBR" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersão 1.3.15 (03/10/2026)|cffffffff
+[*] - A lista de mensagens do histórico agora tem sua própria barra de rolagem (igual às listas de usuários e filtros) e rola corretamente
+[*] - Corrigido o ícone do minimapa que às vezes aparecia no lugar errado
+[*] - Corrigido um erro quando uma palavra-chave de filtro de sussurros continha caracteres especiais
+[*] - O piscar de nova mensagem no minimapa agora para quando todas as conversas são fechadas
+[*] - Corrigidos os controles de largura e altura da janela que não redimensionavam as janelas do WIM
+[*] - Abrir a janela de opções não reproduz mais sons de caixas de seleção
+[*] - Melhorada a compatibilidade com outros addons (estilo de janela de chat do pfUI, autocompletar do chat)
+[*] - Corrigidos os links com URLs que não abriam a janela de cópia
+[*] - Comandos como /wim agora aceitam espaços extras
+[*] - Melhor desempenho quando ocioso
+
 |rVersão 1.3.14 (02/10/2026)|cffffffff
 [*] - Corrigido o histórico de versões na janela de ajuda: não mostra mais espaços vazios acima/abaixo da lista nem corta as versões mais antigas — todo o histórico agora é exibido e rolado corretamente
 
