@@ -226,203 +226,160 @@ function WIM_Options_History_Click()
 	WIM_Options_ShowTab(4);
 end
 
-function WIM_Options_SupressWispsClicked()
-	if(WIM_OptionsTabbedFrameGeneralSupress:GetChecked()) then
-		WIM_Data.supressWisps = true;
-	else
-		WIM_Data.supressWisps = false;
+-- Shared checkbox handler: writes a checked state into WIM_Data and runs
+-- optional extra logic. `path` may be dotted for nested keys (e.g.
+-- "historySettings.recordFriends").
+local function WIM_Options_SetCheckedState(path, checkboxName, extra)
+	local checkbox = getglobal(checkboxName);
+	if(checkbox) then
+		local segs = {};
+		for segment in string.gmatch(path, "[^.]+") do
+			segs[#segs + 1] = segment;
+		end
+		local t = WIM_Data;
+		for i = 1, #segs - 1 do
+			t = t[segs[i]];
+		end
+		if(checkbox:GetChecked()) then
+			t[segs[#segs]] = true;
+		else
+			t[segs[#segs]] = false;
+		end
 	end
+	if(extra) then
+		extra(checkbox);
+	end
+end
+
+function WIM_Options_SupressWispsClicked()
+	WIM_Options_SetCheckedState("supressWisps", "WIM_OptionsTabbedFrameGeneralSupress");
 end
 
 function WIM_Options_KeepFocusClicked()
-	if(WIM_OptionsTabbedFrameGeneralKeepFocus:GetChecked()) then
-		WIM_Data.keepFocus = true;
-		WIM_OptionsTabbedFrameGeneralKeepFocusRested:Enable();
-	else
-		WIM_Data.keepFocus = false;
-		WIM_OptionsTabbedFrameGeneralKeepFocusRested:Disable();
-	end
+	WIM_Options_SetCheckedState("keepFocus", "WIM_OptionsTabbedFrameGeneralKeepFocus", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_OptionsTabbedFrameGeneralKeepFocusRested:Enable();
+		else
+			WIM_OptionsTabbedFrameGeneralKeepFocusRested:Disable();
+		end
+	end);
 end
 
 function WIM_Options_KeepFocusRestedClicked()
-	if(WIM_OptionsTabbedFrameGeneralKeepFocusRested:GetChecked()) then
-		WIM_Data.keepFocusRested = true;
-	else
-		WIM_Data.keepFocusRested = false;
-	end
+	WIM_Options_SetCheckedState("keepFocusRested", "WIM_OptionsTabbedFrameGeneralKeepFocusRested");
 end
 
 function WIM_Options_AutoFocusClicked()
-	if(WIM_OptionsTabbedFrameGeneralAutoFocus:GetChecked()) then
-		WIM_Data.autoFocus = true;
-	else
-		WIM_Data.autoFocus = false;
-	end
+	WIM_Options_SetCheckedState("autoFocus", "WIM_OptionsTabbedFrameGeneralAutoFocus");
 end
 
 function WIM_Options_PopNewClicked()
-	if(WIM_OptionsTabbedFrameGeneralPopNew:GetChecked()) then
-		WIM_Data.popNew = true;
-		WIM_OptionsTabbedFrameGeneralPopUpdate:Enable();
-		WIM_OptionsTabbedFrameGeneralPopCombat:Enable();
-	else
-		WIM_Data.popNew = false;
-		WIM_OptionsTabbedFrameGeneralPopUpdate:Disable();
-		WIM_OptionsTabbedFrameGeneralPopCombat:Disable();
-	end
+	WIM_Options_SetCheckedState("popNew", "WIM_OptionsTabbedFrameGeneralPopNew", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_OptionsTabbedFrameGeneralPopUpdate:Enable();
+			WIM_OptionsTabbedFrameGeneralPopCombat:Enable();
+		else
+			WIM_OptionsTabbedFrameGeneralPopUpdate:Disable();
+			WIM_OptionsTabbedFrameGeneralPopCombat:Disable();
+		end
+	end);
 end
 
 function WIM_Options_PopUpdateClicked()
-	if(WIM_OptionsTabbedFrameGeneralPopUpdate:GetChecked()) then
-		WIM_Data.popUpdate = true;
-	else
-		WIM_Data.popUpdate = false;
-	end
+	WIM_Options_SetCheckedState("popUpdate", "WIM_OptionsTabbedFrameGeneralPopUpdate");
 end
 
 function WIM_Options_PopOnSendClicked()
-	if(WIM_OptionsTabbedFrameGeneralPopOnSend:GetChecked()) then
-		WIM_Data.popOnSend = true;
-	else
-		WIM_Data.popOnSend = false;
-	end
+	WIM_Options_SetCheckedState("popOnSend", "WIM_OptionsTabbedFrameGeneralPopOnSend");
 end
 
 function WIM_Options_PlaySoundWispClicked()
-	if(WIM_OptionsTabbedFrameGeneralPlaySoundWisp:GetChecked()) then
-		WIM_Data.playSoundWisp = true;
-	else
-		WIM_Data.playSoundWisp = false;
-	end
+	WIM_Options_SetCheckedState("playSoundWisp", "WIM_OptionsTabbedFrameGeneralPlaySoundWisp");
 end
 
 function WIM_Options_ShowToolTipsClicked()
-	if(WIM_OptionsTabbedFrameGeneralShowToolTips:GetChecked()) then
-		WIM_Data.showToolTips = true;
-	else
-		WIM_Data.showToolTips = false;
-	end
+	WIM_Options_SetCheckedState("showToolTips", "WIM_OptionsTabbedFrameGeneralShowToolTips");
 end
 
 function WIM_Options_SortOrderAlphaClicked()
-	if(WIM_OptionsTabbedFrameGeneralSortOrderAlpha:GetChecked()) then
-		WIM_Data.sortAlpha = true;
-	else
-		WIM_Data.sortAlpha = false;
-	end
+	WIM_Options_SetCheckedState("sortAlpha", "WIM_OptionsTabbedFrameGeneralSortOrderAlpha");
 	WIM_Icon_DropDown_Update();
 end
 
 function WIM_Options_ShowAFKClicked()
-	if(WIM_OptionsTabbedFrameGeneralShowAFK:GetChecked()) then
-		WIM_Data.showAFK = true;
-	else
-		WIM_Data.showAFK = false;
-	end
+	WIM_Options_SetCheckedState("showAFK", "WIM_OptionsTabbedFrameGeneralShowAFK");
 end
 
 function WIM_Options_UseEscapeClicked()
-	if(WIM_OptionsTabbedFrameGeneralUseEscape:GetChecked()) then
-		WIM_Data.useEscape = true;
-	else
-		WIM_Data.useEscape = false;
-	end
+	WIM_Options_SetCheckedState("useEscape", "WIM_OptionsTabbedFrameGeneralUseEscape");
 	WIM_SetAllWindowProps();
 end
 
 function WIM_Options_InterceptSlashWispClicked()
-	if(WIM_OptionsTabbedFrameGeneralInterceptSlashWisp:GetChecked()) then
-		WIM_Data.hookWispParse = true;
-	else
-		WIM_Data.hookWispParse = false;
-	end
+	WIM_Options_SetCheckedState("hookWispParse", "WIM_OptionsTabbedFrameGeneralInterceptSlashWisp");
 end
 
 
 function WIM_Options_FreeMoving_Clicked()
-	if(WIM_OptionsMiniMapFreeMoving:GetChecked()) then
-		WIM_Data.miniFreeMoving.enabled = true;
-		WIM_Data.miniFreeMoving.left = WIM_IconFrame:GetLeft();
-		WIM_Data.miniFreeMoving.top = WIM_IconFrame:GetTop();
-		WIM_IconFrame:ClearAllPoints();
-		WIM_IconFrame:SetFrameStrata("HIGH");
-		WIM_IconFrame:SetPoint("TOPLEFT", "UIParent", "BOTTOMLEFT", WIM_Data.miniFreeMoving.left, WIM_Data.miniFreeMoving.top);
-	else
-		WIM_IconFrame:SetFrameStrata("LOW");
-		WIM_Data.miniFreeMoving.enabled = false;
-		WIM_Icon_UpdatePosition();
-	end
+	WIM_Options_SetCheckedState("miniFreeMoving.enabled", "WIM_OptionsMiniMapFreeMoving", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_Data.miniFreeMoving.left = WIM_IconFrame:GetLeft();
+			WIM_Data.miniFreeMoving.top = WIM_IconFrame:GetTop();
+			WIM_IconFrame:ClearAllPoints();
+			WIM_IconFrame:SetFrameStrata("HIGH");
+			WIM_IconFrame:SetPoint("TOPLEFT", "UIParent", "BOTTOMLEFT", WIM_Data.miniFreeMoving.left, WIM_Data.miniFreeMoving.top);
+		else
+			WIM_IconFrame:SetFrameStrata("LOW");
+			WIM_Icon_UpdatePosition();
+		end
+	end);
 end
 
 function WIM_Options_PopCombatClicked()
-	if(WIM_OptionsTabbedFrameGeneralPopCombat:GetChecked()) then
-		WIM_Data.popCombat = true;
-	else
-		WIM_Data.popCombat = false;
-	end
+	WIM_Options_SetCheckedState("popCombat", "WIM_OptionsTabbedFrameGeneralPopCombat");
 end
 
 function WIM_Options_CharacerInfoClicked()
-	if(WIM_OptionsDisplayShowCharacterInfo:GetChecked()) then
-		WIM_Data.characterInfo.show = true;
-		WIM_OptionsDisplayShowCharacterInfoClassIcon:Enable();
-		WIM_OptionsDisplayShowCharacterInfoClassColor:Enable();
-	else
-		WIM_Data.characterInfo.show = false;
-		WIM_OptionsDisplayShowCharacterInfoClassIcon:Disable();
-		WIM_OptionsDisplayShowCharacterInfoClassColor:Disable();
-	end
+	WIM_Options_SetCheckedState("characterInfo.show", "WIM_OptionsDisplayShowCharacterInfo", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_OptionsDisplayShowCharacterInfoClassIcon:Enable();
+			WIM_OptionsDisplayShowCharacterInfoClassColor:Enable();
+		else
+			WIM_OptionsDisplayShowCharacterInfoClassIcon:Disable();
+			WIM_OptionsDisplayShowCharacterInfoClassColor:Disable();
+		end
+	end);
 end
 
 function WIM_Options_CharacerInfoClassIconClicked()
-	if(WIM_OptionsDisplayShowCharacterInfoClassIcon:GetChecked()) then
-		WIM_Data.characterInfo.classIcon = true;
-	else
-		WIM_Data.characterInfo.classIcon = false;
-	end
+	WIM_Options_SetCheckedState("characterInfo.classIcon", "WIM_OptionsDisplayShowCharacterInfoClassIcon");
 end
 
 function WIM_Options_CharacerInfoClassColorClicked()
-	if(WIM_OptionsDisplayShowCharacterInfoClassColor:GetChecked()) then
-		WIM_Data.characterInfo.classColor = true;
-	else
-		WIM_Data.characterInfo.classColor = false;
-	end
+	WIM_Options_SetCheckedState("characterInfo.classColor", "WIM_OptionsDisplayShowCharacterInfoClassColor");
 end
 
 function WIM_Options_CharacerInfoDetailsClicked()
-	if(WIM_OptionsDisplayShowCharacterInfoDetails:GetChecked()) then
-		WIM_Data.characterInfo.details = true;
-	else
-		WIM_Data.characterInfo.details = false;
-	end
+	WIM_Options_SetCheckedState("characterInfo.details", "WIM_OptionsDisplayShowCharacterInfoDetails");
 end
 
 function WIM_Options_ShowTimeStampsClicked()
-	if(WIM_OptionsDisplayShowTimeStamps:GetChecked()) then
-		WIM_Data.showTimeStamps = true;
-	else
-		WIM_Data.showTimeStamps = false;
-	end
+	WIM_Options_SetCheckedState("showTimeStamps", "WIM_OptionsDisplayShowTimeStamps");
 end
 
 function WIM_Options_EnableWIMClicked()
-	if(WIM_OptionsEnableWIM:GetChecked()) then
-		WIM_Data.enableWIM = true;
-	else
-		WIM_Data.enableWIM = false;
-	end
+	WIM_Options_SetCheckedState("enableWIM", "WIM_OptionsEnableWIM");
 	WIM_SetWIM_Enabled(WIM_Data.enableWIM);
 end
 
 function WIM_Options_ShowShortcutBarClicked()
-	if(WIM_OptionsDisplayShowShortcutBar:GetChecked()) then
-		WIM_Data.showShortcutBar = true;
-		WIM_OptionsTabbedFrameWindowWindowHeightTitle:SetText(WIM_L_WINDOWHEIGHTLIM);
-	else
-		WIM_Data.showShortcutBar = false;
-		WIM_OptionsTabbedFrameWindowWindowHeightTitle:SetText(WIM_L_WINDOWHEIGHT);
-	end
+	WIM_Options_SetCheckedState("showShortcutBar", "WIM_OptionsDisplayShowShortcutBar", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_OptionsTabbedFrameWindowWindowHeightTitle:SetText(WIM_L_WINDOWHEIGHTLIM);
+		else
+			WIM_OptionsTabbedFrameWindowWindowHeightTitle:SetText(WIM_L_WINDOWHEIGHT);
+		end
+	end);
 	WIM_SetAllWindowProps();
 end
 
@@ -490,19 +447,11 @@ end
 
 
 function WIM_Options_AliasEnabledClicked()
-	if(WIM_OptionsTabbedFrameFilterAliasEnabled:GetChecked()) then
-		WIM_Data.enableAlias = true;
-	else
-		WIM_Data.enableAlias = false;
-	end
+	WIM_Options_SetCheckedState("enableAlias", "WIM_OptionsTabbedFrameFilterAliasEnabled");
 end
 
 function WIM_Options_FilteringEnabledClicked()
-	if(WIM_OptionsTabbedFrameFilterFilteringEnabled:GetChecked()) then
-		WIM_Data.enableFilter = true;
-	else
-		WIM_Data.enableFilter = false;
-	end
+	WIM_Options_SetCheckedState("enableFilter", "WIM_OptionsTabbedFrameFilterFilteringEnabled");
 end
 
 function WIM_FilteringScrollBar_Update()
@@ -580,71 +529,43 @@ function WIM_Options_FilterWindow_Click()
 end
 
 function WIM_Options_AliasShowAsCommentClicked()
-	if(WIM_OptionsTabbedFrameFilterAliasShowAsComment:GetChecked()) then
-		WIM_Data.aliasAsComment = true;
-	else
-		WIM_Data.aliasAsComment = false;
-	end
+	WIM_Options_SetCheckedState("aliasAsComment", "WIM_OptionsTabbedFrameFilterAliasShowAsComment");
 end
 
 function WIM_Options_HistoryEnabledClicked()
-	if(WIM_OptionsTabbedFrameHistoryEnabled:GetChecked()) then
-		WIM_Data.enableHistory = true;
-	else
-		WIM_Data.enableHistory = false;
-	end
+	WIM_Options_SetCheckedState("enableHistory", "WIM_OptionsTabbedFrameHistoryEnabled");
 end
 
 function WIM_Options_HistoryRecordEveryoneClicked()
-	if(WIM_OptionsTabbedFrameHistoryRecordEveryone:GetChecked()) then
-		WIM_Data.historySettings.recordEveryone = true;
-		WIM_OptionsTabbedFrameHistoryRecordFriends:Disable();
-		WIM_OptionsTabbedFrameHistoryRecordGuild:Disable();
-	else
-		WIM_Data.historySettings.recordEveryone = false;
-		WIM_OptionsTabbedFrameHistoryRecordFriends:Enable();
-		WIM_OptionsTabbedFrameHistoryRecordGuild:Enable();
-	end
+	WIM_Options_SetCheckedState("historySettings.recordEveryone", "WIM_OptionsTabbedFrameHistoryRecordEveryone", function(cb)
+		if(cb and cb:GetChecked()) then
+			WIM_OptionsTabbedFrameHistoryRecordFriends:Disable();
+			WIM_OptionsTabbedFrameHistoryRecordGuild:Disable();
+		else
+			WIM_OptionsTabbedFrameHistoryRecordFriends:Enable();
+			WIM_OptionsTabbedFrameHistoryRecordGuild:Enable();
+		end
+	end);
 end
 
 function WIM_Options_HistoryRecordFriendsClicked()
-	if(WIM_OptionsTabbedFrameHistoryRecordFriends:GetChecked()) then
-		WIM_Data.historySettings.recordFriends = true;
-	else
-		WIM_Data.historySettings.recordFriends = false;
-	end
+	WIM_Options_SetCheckedState("historySettings.recordFriends", "WIM_OptionsTabbedFrameHistoryRecordFriends");
 end
 
 function WIM_Options_HistoryRecordGuildClicked()
-	if(WIM_OptionsTabbedFrameHistoryRecordGuild:GetChecked()) then
-		WIM_Data.historySettings.recordGuild = true;
-	else
-		WIM_Data.historySettings.recordGuild = false;
-	end
+	WIM_Options_SetCheckedState("historySettings.recordGuild", "WIM_OptionsTabbedFrameHistoryRecordGuild");
 end
 
 function WIM_Options_HistoryShowInMessageClicked()
-	if(WIM_OptionsTabbedFrameHistoryShowInMessage:GetChecked()) then
-		WIM_Data.historySettings.popWin.enabled = true;
-	else
-		WIM_Data.historySettings.popWin.enabled = false;
-	end
+	WIM_Options_SetCheckedState("historySettings.popWin.enabled", "WIM_OptionsTabbedFrameHistoryShowInMessage");
 end
 
 function WIM_Options_HistorySetMaxToStoreClicked()
-	if(WIM_OptionsTabbedFrameHistorySetMaxToStore:GetChecked()) then
-		WIM_Data.historySettings.maxMsg.enabled = true;
-	else
-		WIM_Data.historySettings.maxMsg.enabled = false;
-	end
+	WIM_Options_SetCheckedState("historySettings.maxMsg.enabled", "WIM_OptionsTabbedFrameHistorySetMaxToStore");
 end
 
 function WIM_Options_HistorySetAutoDeleteClicked()
-	if(WIM_OptionsTabbedFrameHistorySetAutoDelete:GetChecked()) then
-		WIM_Data.historySettings.autoDelete.enabled = true;
-	else
-		WIM_Data.historySettings.autoDelete.enabled = false;
-	end
+	WIM_Options_SetCheckedState("historySettings.autoDelete.enabled", "WIM_OptionsTabbedFrameHistorySetAutoDelete");
 end
 
 function WIM_Options_HistoryMessageCount_OnShow()
