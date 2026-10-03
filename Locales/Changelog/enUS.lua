@@ -1,6 +1,18 @@
 -- English fallback: only used when no matching locale changelog loaded.
 if WIM_CHANGE_LOG == nil then
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.15 (10-03-2026)|cffffffff
+[*] - The History viewer's message list now has its own scrollbar (matching the user and filter lists) and scrolls correctly
+[*] - Fixed the minimap icon sometimes appearing in the wrong place
+[*] - Fixed an error when a whisper filter keyword contained special characters
+[*] - The minimap new-message flash now stops once all conversations are closed
+[*] - Fixed the window width and height sliders not resizing WIM windows
+[*] - Opening the options window no longer plays checkbox sounds
+[*] - Improved compatibility with other addons (pfUI chat-window styling, chat autocompletion)
+[*] - Fixed links containing URLs not opening the copy window
+[*] - Slash commands like /wim now accept extra spaces
+[*] - Improved performance while idle
+
 |rVersion 1.3.14 (10-02-2026)|cffffffff
 [*] - Fixed the Version History in the help window: it no longer shows empty space above/below the list or cuts off at older versions — the full history now displays and scrolls correctly
 

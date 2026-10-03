@@ -1,6 +1,18 @@
 if GetLocale() ~= "frFR" then return end
 
 WIM_CHANGE_LOG = [[
+|rVersion 1.3.15 (03/10/2026)|cffffffff
+[*] - La liste des messages de l'historique dispose désormais de sa propre barre de défilement (comme les listes d'utilisateurs et de filtres) et défile correctement
+[*] - Correction de l'icône de la minicarte qui apparaissait parfois au mauvais endroit
+[*] - Correction d'une erreur lorsqu'un mot-clé de filtre de chuchotements contenait des caractères spéciaux
+[*] - Le clignotement des nouveaux messages sur la minicarte s'arrête maintenant lorsque toutes les conversations sont fermées
+[*] - Correction des curseurs de largeur et de hauteur de fenêtre qui ne redimensionnaient pas les fenêtres de WIM
+[*] - L'ouverture de la fenêtre d'options ne joue plus de sons de cases à cocher
+[*] - Compatibilité améliorée avec d'autres addons (skin de fenêtre de chat pfUI, autocomplétion du chat)
+[*] - Correction des liens contenant des URL qui n'ouvraient pas la fenêtre de copie
+[*] - Les commandes comme /wim acceptent désormais des espaces supplémentaires
+[*] - Performances améliorées au repos
+
 |rVersion 1.3.14 (02/10/2026)|cffffffff
 [*] - Historique des versions corrigé dans la fenêtre d'aide : il n'affiche plus d'espace vide au-dessus/en dessous de la liste ni ne s'arrête aux anciennes versions — tout l'historique s'affiche et défile désormais correctement
 
