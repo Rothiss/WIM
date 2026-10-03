@@ -316,7 +316,7 @@ end
 
 function WIM_PlayerCacheQueueEmpty()
 	for _, info in WIM_PlayerCacheQueue do
-		if info.attempts <= 5 then
+		if info.attempts < 5 then
 			return false
 		end
 	end
@@ -361,14 +361,10 @@ function WIM_Update(elapsed)
 			return
 		end
 		
-		-- Don't send multiple WHOs if we're still waiting for results (non-GM only)
+		-- We only reach here after the cooldown has elapsed, so any scan still
+		-- marked in-progress has stalled; clear it to allow a retry.
 		if WIM_WhoScanInProgress then
-			local timeout = 10
-			if WIM_LastWhoSent and GetTime() - WIM_LastWhoSent < timeout then
-				return
-			end
-			-- Timeout reached, allow retry
-			WIM_DebugMsg("|cffffff00[WIM WHO]|r Timeout reached, allowing retry")
+			WIM_DebugMsg("|cffffff00[WIM WHO]|r Scan stalled, allowing retry")
 			WIM_WhoScanInProgress = false
 		end
 	else

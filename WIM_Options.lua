@@ -5,6 +5,64 @@ WIM_Alias_Selected = "";
 WIM_Filter_Selected = "";
 WIM_History_Selected = "";
 
+-- Shared checkbox handler: plays the toggle sound, writes a checked state into
+-- WIM_Data and runs optional extra logic. `path` may be dotted for nested keys
+-- (e.g. "historySettings.recordFriends").
+local function WIM_Options_PlayCheckSound(checked)
+	if(checked) then
+		PlaySound("igMainMenuOptionCheckBoxOff");
+	else
+		PlaySound("igMainMenuOptionCheckBoxOn");
+	end
+end
+
+local function WIM_Options_SetCheckedState(path, checkboxName, extra)
+	local checkbox = getglobal(checkboxName);
+	if(checkbox) then
+		WIM_Options_PlayCheckSound(checkbox:GetChecked());
+		local segs = {};
+		for segment in string.gmatch(path, "[^.]+") do
+			segs[#segs + 1] = segment;
+		end
+		local t = WIM_Data;
+		for i = 1, #segs - 1 do
+			t = t[segs[i]];
+		end
+		if(checkbox:GetChecked()) then
+			t[segs[#segs]] = true;
+		else
+			t[segs[#segs]] = false;
+		end
+	end
+	if(extra) then
+		extra(checkbox);
+	end
+end
+
+-- Shared slider handler: writes the value into WIM_Data (times an optional
+-- multiplier), updates the paired edit box, and refreshes window props.
+-- `mode`: nil/"propsFirst" = props then edit box; "propsLast" = edit box then
+-- props; "noProps" = edit box only.
+function WIM_Options_SliderChanged(slider, key, multiplier, mode, extra)
+	local value = slider:GetValue();
+	if(key) then
+		WIM_Data[key] = value * (multiplier or 1);
+	end
+	local editBox = getglobal(slider:GetName().."EditBox");
+	if(mode == "propsLast") then
+		if(editBox) then editBox:SetText(value); end
+		WIM_SetAllWindowProps();
+	elseif(mode == "noProps") then
+		if(editBox) then editBox:SetText(value); end
+	else
+		WIM_SetAllWindowProps();
+		if(editBox) then editBox:SetText(value); end
+	end
+	if(extra) then
+		extra(value);
+	end
+end
+
 function WIM_Options_OnShow()
 	local tRGB;
 	
@@ -106,17 +164,14 @@ end
 
 
 function WIM_Options_ShowMiniMapClick()
-	if(WIM_OptionsMiniMapEnabled:GetChecked()) then
-		WIM_Data.showMiniMap = true;
-		if(WIM_Data.miniFreeMoving.enabled) then
-			WIM_IconFrame:SetPoint("TOPLEFT", "UIParent", "BOTTOMLEFT",WIM_Data.miniFreeMoving.left,WIM_Data.miniFreeMoving.top);
+	WIM_Options_SetCheckedState("showMiniMap", "WIM_OptionsMiniMapEnabled", function(cb)
+		if(cb and cb:GetChecked() and WIM_Data.miniFreeMoving.enabled) then
+			WIM_IconFrame:SetPoint("TOPLEFT", "UIParent", "BOTTOMLEFT", WIM_Data.miniFreeMoving.left, WIM_Data.miniFreeMoving.top);
 			WIM_IconFrame:Show();
-			return;
+		else
+			WIM_Icon_UpdatePosition();
 		end
-	else
-		WIM_Data.showMiniMap = false;
-	end
-	WIM_Icon_UpdatePosition();
+	end);
 end
 
 function WIM_Options_OpenColorPicker(button)
@@ -224,31 +279,6 @@ end
 
 function WIM_Options_History_Click()
 	WIM_Options_ShowTab(4);
-end
-
--- Shared checkbox handler: writes a checked state into WIM_Data and runs
--- optional extra logic. `path` may be dotted for nested keys (e.g.
--- "historySettings.recordFriends").
-local function WIM_Options_SetCheckedState(path, checkboxName, extra)
-	local checkbox = getglobal(checkboxName);
-	if(checkbox) then
-		local segs = {};
-		for segment in string.gmatch(path, "[^.]+") do
-			segs[#segs + 1] = segment;
-		end
-		local t = WIM_Data;
-		for i = 1, #segs - 1 do
-			t = t[segs[i]];
-		end
-		if(checkbox:GetChecked()) then
-			t[segs[#segs]] = true;
-		else
-			t[segs[#segs]] = false;
-		end
-	end
-	if(extra) then
-		extra(checkbox);
-	end
 end
 
 function WIM_Options_SupressWispsClicked()
@@ -756,11 +786,7 @@ function WIM_Options_WindowAnchorToggle_Click()
 end
 
 function WIM_Options_WindowCascadeClicked()
-	if(WIM_OptionsTabbedFrameWindowWindowCascade:GetChecked()) then
-		WIM_Data.winCascade.enabled = true;
-	else
-		WIM_Data.winCascade.enabled = false;
-	end
+	WIM_Options_SetCheckedState("winCascade.enabled", "WIM_OptionsTabbedFrameWindowWindowCascade");
 end
 
 function WIM_Options_CascadeDirection_OnShow()
