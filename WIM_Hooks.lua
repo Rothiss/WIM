@@ -1,5 +1,8 @@
 WIM_HooksInstalled = false;
 
+local strfind, strsub, strlower, strupper, gsub, getglobal, strlen =
+	string.find, string.sub, string.lower, string.upper, string.gsub, getglobal, string.len;
+
 
 function WIM_FriendsFrame_SendMessage()
 	local name = GetFriendInfo(FriendsFrame.selectedFriend);
@@ -83,12 +86,12 @@ function WIM_FriendsFrame_OnEvent()
 					local callbacks = WIM_PlayerCacheQueue[name].callbacks
 					WIM_PlayerCacheQueue[name] = nil
 
-					WIM_PlayerCache[name] = {
+					WIM_SetPlayerCache(name, {
 						class = class,
 						level = level,
 						race = race,
 						guild = guild,
-					}
+					})
 
 					for _, callback in callbacks do
 						callback(WIM_PlayerCache[name])

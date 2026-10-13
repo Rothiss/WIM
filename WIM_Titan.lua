@@ -1,4 +1,6 @@
 --[ WIM Titan Panel Addon ]
+local getglobal = getglobal;
+
 WIM_TITAN_IS_LOADED = false;
 WIM_CurMessageState = false;
 
@@ -74,5 +76,7 @@ function WIM_TitanButton_OnShow()
 end
 
 function WIM_Titan_InitMenu()
-	UIDropDownMenu_Initialize(this, WIM_Icon_DropDown_Init, "MENU");
+	if WIM_Icon_DropDown_Init then
+		UIDropDownMenu_Initialize(this, WIM_Icon_DropDown_Init, "MENU");
+	end
 end

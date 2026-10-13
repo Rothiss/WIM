@@ -1,5 +1,8 @@
 WIM_VERSION = "1.3.15";
 
+local strfind, strsub, strlower, strupper, gsub, format, tinsert, tremove, getglobal =
+	string.find, string.sub, string.lower, string.upper, string.gsub, string.format, table.insert, table.remove, getglobal;
+
 -- OctoWoW is built on the Turtle WoW client. If the client does not expose its
 -- own OCTO_WOW_VERSION marker, inherit the Turtle-detection global so the WHO
 -- cooldown in WIM_Update stays throttled on OctoWoW/Turtle-based clients.
@@ -16,6 +19,8 @@ WIM_ClassIcons = {};
 WIM_ClassColors = {};
 WIM_PlayerCache = {}
 WIM_PlayerCacheQueue = {}
+WIM_PlayerCacheCount = 0
+WIM_PlayerCacheMax = 500
 WIM_LastWhoSent = nil
 WIM_WhoScanInProgress = false
 WIM_IsGM = false
@@ -78,11 +83,13 @@ WIM_FriendList = {}; --[Not saved between sessions: Autopopulates from FRIENDLIS
 
 WIM_Alias = {};
 WIM_Filters = nil;
+WIM_CompiledFilters = {};
 	
 WIM_ToggleWindow_Timer = 0;
 WIM_ToggleWindow_Index = 1;
 
 WIM_RecentList = {}; --[Not saved between sessions: Store's list of recent conversations.
+WIM_RecentListMax = 50;
 	
 WIM_History = {};
 
@@ -225,6 +232,21 @@ WIM_CascadeDirection = {
 
 WIM_IconItems = { };
 
+local WIM_Windows, WIM_PlayerCache, WIM_IconItems = WIM_Windows, WIM_PlayerCache, WIM_IconItems;
+
+function WIM_SetPlayerCache(name, info)
+	if(WIM_PlayerCache[name] == nil) then
+		WIM_PlayerCacheCount = WIM_PlayerCacheCount + 1;
+		if(WIM_PlayerCacheCount > WIM_PlayerCacheMax) then
+			for key in WIM_PlayerCache do
+				WIM_PlayerCache[key] = nil;
+			end
+			WIM_PlayerCacheCount = 0;
+		end
+	end
+	WIM_PlayerCache[name] = info;
+end
+
 function WIM_OnLoad()
 	SlashCmdList["WIM"] = WIM_SlashCommand;
 	SLASH_WIM1 = "/wim";
@@ -259,6 +281,7 @@ function WIM_Incoming(event)
 		if(WIM_Filters == nil) then
 			WIM_LoadDefaultFilters();
 		end
+		WIM_CompileFilters();
 		ShowFriends(); --[update friend list
 		if(IsInGuild()) then GuildRoster(); end; --[update guild roster
 		
@@ -282,6 +305,7 @@ function WIM_Incoming(event)
 					WIM_Filters[key] = nil
 				end
 			end
+			WIM_CompileFilters();
 			WIM_Help:Show();
 			if WIM_Data.versionLastLoaded ~= "" then
 				WIM_Help_ChangeLog_Click();
@@ -324,10 +348,26 @@ function WIM_PlayerCacheQueueEmpty()
 end
 
 WIM_Update_Elapsed = 0
+WIM_UpdateActive = true
+
+function WIM_Update_Start()
+	if not WIM_UpdateActive then
+		WIM_UpdateActive = true
+		WIM_Update_Elapsed = 0
+		WIM_Core:SetScript("OnUpdate", function()
+			WIM_Update(arg1)
+		end)
+	end
+end
+
+function WIM_Update_Stop()
+	WIM_UpdateActive = false
+	WIM_Core:SetScript("OnUpdate", nil)
+end
 
 function WIM_Update(elapsed)
-	-- Skip per-frame work while the WHO queue is idle (truly empty and not
-	-- mid-scan), so WIM_Update doesn't tick every frame forever.
+	-- Stop ticking entirely while the WHO queue is idle (empty and not
+	-- mid-scan). WIM_WhoInfo restarts it when work is queued.
 	if not WIM_WhoScanInProgress then
 		local any = false
 		for _ in WIM_PlayerCacheQueue do
@@ -335,6 +375,7 @@ function WIM_Update(elapsed)
 			break
 		end
 		if not any then
+			WIM_Update_Stop()
 			return
 		end
 	end
@@ -431,7 +472,20 @@ function WIM_WhoInfo(name, callback)
 			WIM_PlayerCacheQueue[name] = { callbacks = {}, attempts = 0 }
 		end
 		tinsert(WIM_PlayerCacheQueue[name].callbacks, callback)
+		WIM_Update_Start()
 	end
+end
+
+function WIM_SystemMsgUser(theMsg)
+	local tstart,tfinish = strfind(theMsg, "\'(%a+)\'");
+	if(tstart ~= nil and tfinish ~= nil) then
+		local user = strsub(theMsg, tstart+1, tfinish-1);
+		user = gsub(user, "^%l", strupper);
+		if(strfind(theMsg, "playing") ~= nil and WIM_Windows[user] ~= nil) then
+			return user;
+		end
+	end
+	return nil;
 end
 
 function WIM_ChatFrame_OnEvent(event)
@@ -457,8 +511,9 @@ function WIM_ChatFrame_OnEvent(event)
 
 		-- Store GM status before WIM_PostMessage (so it's set when WIM_SetWhoInfo is called)
 		if isGMSender then
-			WIM_PlayerCache[sender] = WIM_PlayerCache[sender] or {}
-			WIM_PlayerCache[sender].isGM = true
+			local info = WIM_PlayerCache[sender] or {}
+			info.isGM = true
+			WIM_SetPlayerCache(sender, info)
 			-- Remove from WHO queue if present
 			if WIM_PlayerCacheQueue[sender] then
 				WIM_DebugMsg("|cffff00ff[WIM GM]|r Removing GM from WHO queue: " .. sender)
@@ -470,7 +525,8 @@ function WIM_ChatFrame_OnEvent(event)
 		if isGMSender and WIM_Windows[sender] then
 			WIM_SetWhoInfo(sender)
 		end
-		if WIM_FilterResult(content) ~= 1 and WIM_FilterResult(content) ~= 2 then
+		local filterResult = WIM_FilterResult(content)
+		if filterResult ~= 1 and filterResult ~= 2 then
 			local displayName = isGMSender and ("<GM>"..WIM_GetAlias(sender, true)) or WIM_GetAlias(sender, true)
 			msg = "[|Hplayer:"..sender.."|h"..displayName.."|h]: "..content
 			WIM_PostMessage(sender, msg, 1, sender, content)
@@ -484,8 +540,9 @@ function WIM_ChatFrame_OnEvent(event)
 		
 		-- Store GM status BEFORE WIM_PostMessage
 		if isGMReceiver then
-			WIM_PlayerCache[receiver] = WIM_PlayerCache[receiver] or {}
-			WIM_PlayerCache[receiver].isGM = true
+			local info = WIM_PlayerCache[receiver] or {}
+			info.isGM = true
+			WIM_SetPlayerCache(receiver, info)
 			WIM_DebugMsg("|cffff00ff[WIM GM]|r Set isGM=true for: " .. receiver)
 			-- Remove from WHO queue if present
 			if WIM_PlayerCacheQueue[receiver] then
@@ -499,21 +556,17 @@ function WIM_ChatFrame_OnEvent(event)
 			end
 		end
 		
-		if WIM_FilterResult(content) ~= 1 and WIM_FilterResult(content) ~= 2 then
+		local filterResult = WIM_FilterResult(content)
+		if filterResult ~= 1 and filterResult ~= 2 then
 			msg = "[|Hplayer:"..UnitName("player").."|h"..WIM_GetAlias(UnitName("player"), true).."|h]: "..content
 			WIM_PostMessage(receiver, msg, 2, UnitName("player"), content)
 		end
 	elseif(event == "CHAT_MSG_SYSTEM") then
-		local tstart,tfinish = string.find(arg1, "\'(%a+)\'");
-		if(tstart ~= nil and tfinish ~= nil) then
-			local user = string.sub(arg1, tstart+1, tfinish-1);
-			user = string.gsub(user, "^%l", string.upper)
-			tstart, tfinish = string.find(arg1, "playing");
-			if(tstart ~= nil and WIM_Windows[user] ~= nil) then
-				-- player not playing, can't whisper
-				msg = "|Hplayer:"..user.."|h"..user.."|h is not currently playing!";
-				WIM_PostMessage(user, msg, 4);
-			end
+		local user = WIM_SystemMsgUser(arg1);
+		if(user ~= nil) then
+			-- player not playing, can't whisper
+			msg = "|Hplayer:"..user.."|h"..user.."|h is not currently playing!";
+			WIM_PostMessage(user, msg, 4);
 		end
 	end
 end
@@ -558,18 +611,12 @@ function WIM_ChatFrameSupressor_OnEvent(event)
 			end
 		end
 	elseif(event == "CHAT_MSG_SYSTEM") then
-		local tstart,tfinish = string.find(arg1, "\'(%a+)\'");
-		if(tstart ~= nil and tfinish ~= nil) then
-			local user = string.sub(arg1, tstart+1, tfinish-1);
-			user = string.gsub(user, "^%l", string.upper)
-			tstart, tfinish = string.find(arg1, "playing");
-			if(tstart ~= nil and WIM_Windows[user] ~= nil) then
-				-- player not playing, can't whisper
-				if(WIM_Data.supressWisps) then
-					return false; --[ false to supress from chatframe
-				else
-					return true;
-				end
+		if(WIM_SystemMsgUser(arg1) ~= nil) then
+			-- player not playing, can't whisper
+			if(WIM_Data.supressWisps) then
+				return false; --[ false to supress from chatframe
+			else
+				return true;
 			end
 		end
 		return true;
@@ -720,18 +767,20 @@ end
 
 function WIM_UpdateScrollBars(smf)
 	local parentName = smf:GetParent():GetName();
-	if(getglobal(parentName.."ScrollUp")) then
+	local scrollUp = getglobal(parentName.."ScrollUp");
+	if(scrollUp) then
 		if(smf:AtTop()) then
-			getglobal(parentName.."ScrollUp"):Disable();
+			scrollUp:Disable();
 		else
-			getglobal(parentName.."ScrollUp"):Enable();
+			scrollUp:Enable();
 		end
 	end
-	if(getglobal(parentName.."ScrollDown")) then
+	local scrollDown = getglobal(parentName.."ScrollDown");
+	if(scrollDown) then
 		if(smf:AtBottom()) then
-			getglobal(parentName.."ScrollDown"):Disable();
+			scrollDown:Disable();
 		else
-			getglobal(parentName.."ScrollDown"):Enable();
+			scrollDown:Enable();
 		end
 	end
 	if(WIM_HistoryViewMessageListScrollBar_Update and getglobal(parentName.."ScrollBar")) then
@@ -761,11 +810,14 @@ function WIM_DisplayURL(link)
 end
 
 function WIM_ConvertURLtoLinks(text)
+	if(strfind(text, "://") == nil) then
+		return text;
+	end
 	local preLink, midLink, postLink;
 	preLink = "|Hurl:";
 	midLink = "|h|cff"..WIM_RGBtoHex(WIM_Data.displayColors.webAddress.r, WIM_Data.displayColors.webAddress.g, WIM_Data.displayColors.webAddress.b);
 	postLink = "|h|r";
-	text = string.gsub(text, "(%a+://[%w_/%.%?%%=~&-]+)", preLink.."%1"..midLink.."%1"..postLink);
+	text = gsub(text, "(%a+://[%w_/%.%?%%=~&-]+)", preLink.."%1"..midLink.."%1"..postLink);
 	return text;
 end
 
@@ -863,6 +915,19 @@ function WIM_SetAllWindowProps()
 	end
 end
 
+local WIM_PropsRefreshFrame = CreateFrame("Frame")
+WIM_PropsRefreshFrame:Hide()
+WIM_PropsRefreshFrame:SetScript("OnUpdate", function()
+	WIM_PropsRefreshFrame:Hide()
+	WIM_SetAllWindowProps()
+end)
+
+function WIM_RequestSetAllWindowProps()
+	if not WIM_PropsRefreshFrame:IsShown() then
+		WIM_PropsRefreshFrame:Show()
+	end
+end
+
 
 function WIM_Icon_ToggleDropDown()
 	if(WIM_ConversationMenu:IsVisible()) then
@@ -871,6 +936,41 @@ function WIM_Icon_ToggleDropDown()
 		WIM_ConversationMenu:ClearAllPoints();
 		WIM_ConversationMenu:Show();
 		WIM_ConversationMenu:SetPoint("TOPRIGHT", WIM_IconFrame, "BOTTOMLEFT", 5, 5);
+	end
+end
+
+local WIM_TellButtons = nil;
+local function WIM_EnsureTellButtons()
+	if WIM_TellButtons == nil then
+		WIM_TellButtons = {};
+		for i=1,20 do
+			local button = getglobal("WIM_ConversationMenuTellButton"..i);
+			if button then
+				button.close = getglobal("WIM_ConversationMenuTellButton"..i.."Close");
+			end
+			WIM_TellButtons[i] = button;
+		end
+	end
+	return WIM_TellButtons;
+end
+
+WIM_IconFlashActive = false;
+
+function WIM_Icon_FlashStart()
+	if not WIM_IconFlashActive then
+		WIM_IconFlashActive = true;
+		WIM_IconFrame.TimeSinceLastUpdate = 0;
+		WIM_IconFrame:SetScript("OnUpdate", function()
+			WIM_Icon_OnUpdate(arg1);
+		end);
+	end
+end
+
+function WIM_Icon_FlashStop()
+	WIM_IconFlashActive = false;
+	WIM_IconFrame:SetScript("OnUpdate", nil);
+	if WIM_Icon_NewMessageFlash:IsVisible() then
+		WIM_Icon_NewMessageFlash:Hide();
 	end
 end
 
@@ -893,11 +993,16 @@ function WIM_Icon_DropDown_Update()
 		end
 	end
 	
+	local tellButtons = WIM_EnsureTellButtons();
+	
 	--Initialize Menu
 	for i=1,20 do 
-		getglobal("WIM_ConversationMenuTellButton"..i.."Close"):Show()
-		getglobal("WIM_ConversationMenuTellButton"..i):Enable()
-		getglobal("WIM_ConversationMenuTellButton"..i):Hide()
+		local button = tellButtons[i];
+		if button then
+			if button.close then button.close:Show() end
+			button:Enable()
+			button:Hide()
+		end
 	end
 	
 	
@@ -905,26 +1010,30 @@ function WIM_Icon_DropDown_Update()
 	WIM_NewMessageFlag = false;
 	
 	if tCount == 0 then
-		getglobal("WIM_ConversationMenuTellButton1Close"):Hide()
-		getglobal("WIM_ConversationMenuTellButton1"):Disable()
-		getglobal("WIM_ConversationMenuTellButton1"):SetText(WIM_L_NONEC)
-		getglobal("WIM_ConversationMenuTellButton1"):Show()
+		local button = tellButtons[1];
+		button.close:Hide()
+		button:Disable()
+		button:SetText(WIM_L_NONEC)
+		button:Show()
 	else
 		if WIM_Data.sortAlpha then
 			table.sort(tList)
 		end
 		for i=1,table.getn(tList) do
-			if WIM_Windows[tList[i]].newMSG and WIM_Windows[tList[i]].is_visible == false then
-				WIM_IconItems[tList[i]].color = "|cff"..WIM_RGBtoHex(77/255, 147/255, 224/255)
+			local user = tList[i]
+			local item = WIM_IconItems[user]
+			if WIM_Windows[user].newMSG and WIM_Windows[user].is_visible == false then
+				item.color = "|cff"..WIM_RGBtoHex(77/255, 147/255, 224/255)
 				WIM_NewMessageFlag = true
 				WIM_NewMessageCount = WIM_NewMessageCount + 1
 			else
-				WIM_IconItems[tList[i]].color = "|cffffffff"
+				item.color = "|cffffffff"
 			end
-			getglobal("WIM_ConversationMenuTellButton"..i):SetText(WIM_IconItems[tList[i]].color..WIM_GetAlias(WIM_IconItems[tList[i]].text, true))
-			getglobal("WIM_ConversationMenuTellButton"..i).theUser = WIM_IconItems[tList[i]].text
-			getglobal("WIM_ConversationMenuTellButton"..i).value = WIM_IconItems[tList[i]].value
-			getglobal("WIM_ConversationMenuTellButton"..i):Show()
+			local button = tellButtons[i]
+			button:SetText(item.color..WIM_GetAlias(item.text, true))
+			button.theUser = item.text
+			button.value = item.value
+			button:Show()
 		end
 	end
 	
@@ -946,17 +1055,24 @@ function WIM_Icon_DropDown_Update()
 		--show wim disabled icon
 		WIM_IconFrameButton:SetNormalTexture("Interface\\AddOns\\WIM\\Images\\miniOff")
 	end
+	
+	if WIM_NewMessageFlag then
+		WIM_Icon_FlashStart()
+	else
+		WIM_Icon_FlashStop()
+	end
 end
 
 
 function WIM_ConversationMenu_OnUpdate(elapsed)
-	if this.isCounting then
-		this.timeElapsed = this.timeElapsed + elapsed
-		if this.timeElapsed > 1 then
-			this:Hide()
-			this.timeElapsed = 0
-			this.isCounting = false
-		end
+	if not WIM_ConversationMenu.isCounting then
+		return
+	end
+	WIM_ConversationMenu.timeElapsed = (WIM_ConversationMenu.timeElapsed or 0) + elapsed
+	if WIM_ConversationMenu.timeElapsed > 1 then
+		WIM_ConversationMenu:Hide()
+		WIM_ConversationMenu.timeElapsed = 0
+		WIM_ConversationMenu.isCounting = false
 	end
 end
 
@@ -987,22 +1103,19 @@ end
 
 function WIM_Icon_OnUpdate(elapsedTime)
 	if WIM_NewMessageFlag == false then
-		this.TimeSinceLastUpdate = 0
-		if WIM_Icon_NewMessageFlash:IsVisible() then
-			WIM_Icon_NewMessageFlash:Hide()
-		end
+		WIM_Icon_FlashStop()
 		return
 	end
 
-	this.TimeSinceLastUpdate = (this.TimeSinceLastUpdate or 0) + elapsedTime 	
+	WIM_IconFrame.TimeSinceLastUpdate = (WIM_IconFrame.TimeSinceLastUpdate or 0) + elapsedTime 	
 
-	while this.TimeSinceLastUpdate > WIM_Icon_UpdateInterval do
+	while WIM_IconFrame.TimeSinceLastUpdate > WIM_Icon_UpdateInterval do
 		if WIM_Icon_NewMessageFlash:IsVisible() then
 			WIM_Icon_NewMessageFlash:Hide()
 		else
 			WIM_Icon_NewMessageFlash:Show()
 		end
-		this.TimeSinceLastUpdate = this.TimeSinceLastUpdate - WIM_Icon_UpdateInterval
+		WIM_IconFrame.TimeSinceLastUpdate = WIM_IconFrame.TimeSinceLastUpdate - WIM_Icon_UpdateInterval
 	end
 end
 
@@ -1232,9 +1345,9 @@ function WIM_GetAlias(theUser, nameOnly)
 end
 
 
-function WIM_FilterResult(theMSG)
-	if(WIM_Data.enableFilter) then
-		local key;
+function WIM_CompileFilters()
+	local compiled = {};
+	if(WIM_Filters) then
 		for key in WIM_Filters do
 			-- Treat saved filter keys as literal text, not Lua patterns.
 			-- Escape pattern magic characters but keep a leading "^" as an anchor.
@@ -1247,18 +1360,31 @@ function WIM_FilterResult(theMSG)
 			if anchored then
 				pat = "^" .. pat;
 			end
-			if(strfind(strlower(theMSG), strlower(pat)) ~= nil) then
-				if(WIM_Filters[key] == "Ignore") then
+			tinsert(compiled, { pattern = strlower(pat), action = WIM_Filters[key] });
+		end
+	end
+	WIM_CompiledFilters = compiled;
+end
+
+function WIM_FilterResult(theMSG)
+	if(not WIM_Data.enableFilter) then
+		return 0;
+	end
+	local compiled = WIM_CompiledFilters;
+	if(compiled) then
+		local msg = strlower(theMSG);
+		for i=1,table.getn(compiled) do
+			local entry = compiled[i];
+			if(strfind(msg, entry.pattern) ~= nil) then
+				if(entry.action == "Ignore") then
 					return 1;
-				elseif(WIM_Filters[key] == "Block") then
+				elseif(entry.action == "Block") then
 					return 2;
 				end
 			end
 		end
-		return 0;
-	else
-		return 0;
 	end
+	return 0;
 end
 
 function WIM_CanRecordUser(theUser)
@@ -1296,13 +1422,14 @@ function WIM_AddToHistory(theUser, userFrom, theMessage, isMsgIn)
 			if(WIM_History[theUser] == nil) then
 				WIM_History[theUser] = {};
 			end
-			table.insert(WIM_History[theUser], tmpEntry);
+			local history = WIM_History[theUser];
+			table.insert(history, tmpEntry);
 			
 			if(WIM_Data.historySettings.maxMsg.enabled) then
-				local tOver = table.getn(WIM_History[theUser]) - WIM_Data.historySettings.maxMsg.count;
+				local tOver = table.getn(history) - WIM_Data.historySettings.maxMsg.count;
 				if(tOver > 0) then
 					for i = 1, tOver do 
-						table.remove(WIM_History[theUser], 1);
+						table.remove(history, 1);
 					end
 				end
 			end
@@ -1322,23 +1449,28 @@ function WIM_SortHistory(a, b)
 end
 
 function WIM_DisplayHistory(theUser)
-	if(WIM_History[theUser] and WIM_Data.enableHistory and WIM_Data.historySettings.popWin.enabled) then
-		table.sort(WIM_History[theUser], WIM_SortHistory);
-		for i=getn(WIM_History[theUser])-WIM_Data.historySettings.popWin.count+1, getn(WIM_History[theUser]) do
-			if(WIM_History[theUser][i]) then
+	local history = WIM_History[theUser];
+	if(history and WIM_Data.enableHistory and WIM_Data.historySettings.popWin.enabled) then
+		table.sort(history, WIM_SortHistory);
+		local chatBox = getglobal("WIM_msgFrame"..theUser.."ScrollingMessageFrame");
+		local colorIn = WIM_Data.historySettings.colorIn;
+		local colorOut = WIM_Data.historySettings.colorOut;
+		for i=getn(history)-WIM_Data.historySettings.popWin.count+1, getn(history) do
+			local entry = history[i];
+			if(entry) then
 				-- Include <GM> tag if sender was GM
-				local displayName = WIM_GetAlias(WIM_History[theUser][i].from, true);
-				if WIM_History[theUser][i].isGM then
+				local displayName = WIM_GetAlias(entry.from, true);
+				if entry.isGM then
 					displayName = "<GM>"..displayName;
 				end
-				local msg = "|Hplayer:"..WIM_History[theUser][i].from.."|h["..displayName.."]|h: "..WIM_History[theUser][i].msg;
+				local msg = "|Hplayer:"..entry.from.."|h["..displayName.."]|h: "..entry.msg;
 				if(WIM_Data.showTimeStamps) then
-					msg = WIM_History[theUser][i].time.." "..msg;
+					msg = entry.time.." "..msg;
 				end
-				if(WIM_History[theUser][i].type == 1) then
-					getglobal("WIM_msgFrame"..theUser.."ScrollingMessageFrame"):AddMessage(msg, WIM_Data.historySettings.colorIn.r, WIM_Data.historySettings.colorIn.g, WIM_Data.historySettings.colorIn.b);
-				elseif(WIM_History[theUser][i].type == 2) then
-					getglobal("WIM_msgFrame"..theUser.."ScrollingMessageFrame"):AddMessage(msg, WIM_Data.historySettings.colorOut.r, WIM_Data.historySettings.colorOut.g, WIM_Data.historySettings.colorOut.b);
+				if(entry.type == 1) then
+					chatBox:AddMessage(msg, colorIn.r, colorIn.g, colorIn.b);
+				elseif(entry.type == 2) then
+					chatBox:AddMessage(msg, colorOut.r, colorOut.g, colorOut.b);
 				end
 			end
 		end
@@ -1357,6 +1489,7 @@ function WIM_LoadDefaultFilters()
 	WIM_Filters["^YOU ARE THE BOMB!"] 		= "Ignore";
 	WIM_Filters["VOLATILE INFECTION"] 		= "Ignore";
 
+	WIM_CompileFilters();
 	WIM_FilteringScrollBar_Update();
 end
 
@@ -1426,6 +1559,9 @@ function WIM_RecentListAdd(theUser)
 		end
 	end
 	table.insert(WIM_RecentList, 1, theUser);
+	if(table.getn(WIM_RecentList) > WIM_RecentListMax) then
+		table.remove(WIM_RecentList);
+	end
 end
 
 function WIM_ToggleWindow_Toggle()

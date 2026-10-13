@@ -1,6 +1,8 @@
 WIM_Options_CurrentSwatch = nil;
 WIM_Options_AlreadyShown = false;
 
+local getglobal, max, min = getglobal, math.max, math.min;
+
 WIM_Alias_Selected = "";
 WIM_Filter_Selected = "";
 WIM_History_Selected = "";
@@ -57,11 +59,11 @@ function WIM_Options_SliderChanged(slider, key, multiplier, mode, extra)
 	local editBox = getglobal(slider:GetName().."EditBox");
 	if(mode == "propsLast") then
 		if(editBox) then editBox:SetText(value); end
-		WIM_SetAllWindowProps();
+		WIM_RequestSetAllWindowProps();
 	elseif(mode == "noProps") then
 		if(editBox) then editBox:SetText(value); end
 	else
-		WIM_SetAllWindowProps();
+		WIM_RequestSetAllWindowProps();
 		if(editBox) then editBox:SetText(value); end
 	end
 	if(extra) then
@@ -565,6 +567,7 @@ function WIM_Options_FilterWindow_Click()
 		WIM_Filters[WIM_Options_FilterWindow.prevName] = nil;
 	end
 	
+	WIM_CompileFilters();
 	WIM_FilteringScrollBar_Update();
 	PlaySound("igMainMenuClose");
 	WIM_Options_FilterWindow:Hide();
@@ -617,8 +620,7 @@ function WIM_Options_HistoryMessageCount_OnShow()
 end
 
 function WIM_Options_HistoryMessageCount_Initialize()
-	local info = {};
-	info = { };
+	local info = { };
 	info.text = "1";
 	info.value = 1;
 	info.justifyH = "LEFT";
@@ -964,9 +966,9 @@ local function WIM_Help_SetText(text)
 	WIM_Help_BuildBlocks(text, scrollChild, scrollFrame:GetWidth())
 
 	local scrollBar = WIM_HelpScrollFrameScrollBar
-	local maxScroll = math.max(0, WIM_HelpContentHeight - scrollFrame:GetHeight())
+	local maxScroll = max(0, WIM_HelpContentHeight - scrollFrame:GetHeight())
 	if scrollBar then
-		scrollBar:SetMinMaxValues(0, math.max(maxScroll, 1))
+		scrollBar:SetMinMaxValues(0, max(maxScroll, 1))
 		scrollBar:SetValue(0)
 	end
 	scrollFrame:UpdateScrollChildRect()

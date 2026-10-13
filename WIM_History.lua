@@ -1,5 +1,7 @@
 --[Functions: GUI Interface for WIM_History.xml
 
+local getglobal = getglobal;
+
 WIM_HistoryView_Name_Selected = "";
 WIM_HistoryView_Filter_Selected = "";
 
